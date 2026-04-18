@@ -1,0 +1,46 @@
+/vendor/
+/composer.phar
+/composer.lock
+/.env
+/.env.testing
+
+# PHPUnit
+/.phpunit.cache/
+/.phpunit.result.cache
+/phpunit.xml.bak
+
+# Coverage / build artifacts
+/build/
+/coverage/
+
+# Laravel / local runtime files
+/database.sqlite
+/tests/database/database.sqlite
+/storage/*.key
+/storage/app/geo/maxmind/
+/storage/app/testing/geo/maxmind/
+/resources/maxmind/
+/Homestead.json
+/Homestead.yaml
+
+# IDEs and editors
+/.idea/
+/.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
+Icon?
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

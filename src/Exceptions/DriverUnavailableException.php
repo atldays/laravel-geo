@@ -15,6 +15,11 @@ class DriverUnavailableException extends DriverException
         ), previous: $previous);
     }
 
+    public static function maxMind(string $reason, ?Throwable $previous = null): self
+    {
+        return self::because('MaxMind', $reason, $previous);
+    }
+
     public static function allDriversFailed(?Throwable $previous = null): self
     {
         return new self(

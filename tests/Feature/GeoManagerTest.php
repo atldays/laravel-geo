@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use Atldays\Geo\Contracts\CityContract;
 use Atldays\Geo\Contracts\ContinentContract;
 use Atldays\Geo\Contracts\CountryContract;
-use Atldays\Geo\Contracts\GeoResultContract;
+use Atldays\Geo\Contracts\GeoDataContract;
 use Atldays\Geo\GeoManager;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
@@ -20,7 +20,7 @@ class GeoManagerTest extends TestCase
 
         $result = $this->app->make(GeoManager::class)->ip('149.50.244.3');
 
-        $this->assertInstanceOf(GeoResultContract::class, $result);
+        $this->assertInstanceOf(GeoDataContract::class, $result);
         $this->assertInstanceOf(ContinentContract::class, $result->continent());
         $this->assertInstanceOf(CountryContract::class, $result->country());
         $this->assertInstanceOf(CityContract::class, $result->city());

@@ -2,9 +2,9 @@
 
 namespace Atldays\Geo;
 
+use Atldays\Geo\Contracts\GeoDataContract;
 use Atldays\Geo\Contracts\GeoDriver;
-use Atldays\Geo\Contracts\GeoResultContract;
-use Atldays\Geo\Data\GeoResult;
+use Atldays\Geo\Data\GeoData;
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use Atldays\Geo\Exceptions\GeoException;
 use Illuminate\Contracts\Config\Repository as Config;
@@ -24,13 +24,13 @@ class GeoManager
     /**
      * @throws BindingResolutionException
      */
-    public function ip(string $ip): GeoResultContract
+    public function ip(string $ip): GeoDataContract
     {
         $exception = null;
 
         foreach ($this->drivers() as $driver) {
             try {
-                return $driver->locate($ip);
+                return $driver->resolve($ip);
             } catch (DriverUnavailableException $exception) {
                 continue;
             }
@@ -40,13 +40,13 @@ class GeoManager
             throw DriverUnavailableException::allDriversFailed($exception);
         }
 
-        return GeoResult::unresolved($ip);
+        return GeoData::unresolved($ip);
     }
 
     /**
      * @throws BindingResolutionException
      */
-    public function request(?Request $request = null): GeoResultContract
+    public function request(?Request $request = null): GeoDataContract
     {
         $request ??= $this->container->make('request');
 

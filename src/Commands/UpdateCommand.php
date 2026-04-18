@@ -2,10 +2,11 @@
 
 namespace Atldays\Geo\Commands;
 
-use Atldays\Geo\Contracts\Updatable;
+use Atldays\Geo\Contracts\GeoDriverUpdatable;
 use Atldays\Geo\Data\UpdateOptions;
 use Atldays\Geo\GeoManager;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Throwable;
 
 class UpdateCommand extends Command
@@ -15,12 +16,15 @@ class UpdateCommand extends Command
 
     protected $description = 'Update all configured drivers that support refreshes.';
 
+    /**
+     * @throws BindingResolutionException
+     */
     public function handle(GeoManager $manager): int
     {
         $updatableDrivers = 0;
 
         foreach ($manager->drivers() as $driver) {
-            if (!$driver instanceof Updatable) {
+            if (!$driver instanceof GeoDriverUpdatable) {
                 continue;
             }
 

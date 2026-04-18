@@ -4,5 +4,5 @@ namespace Atldays\Geo\Contracts;
 
 interface GeoDriver
 {
-    public function locate(string $ip): GeoResultContract;
+    public function resolve(string $ip): GeoDataContract;
 }

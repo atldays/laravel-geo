@@ -4,5 +4,5 @@ namespace Atldays\Geo\Contracts;
 
 interface Geoable
 {
-    public function getGeo(): GeoResultContract;
+    public function getGeo(): GeoDataContract;
 }

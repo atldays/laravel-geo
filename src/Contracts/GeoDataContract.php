@@ -2,7 +2,9 @@
 
 namespace Atldays\Geo\Contracts;
 
-interface GeoResultContract extends GeoData
+use Illuminate\Contracts\Support\Arrayable;
+
+interface GeoDataContract extends Arrayable
 {
     public function ip(): string;
 
@@ -23,4 +25,6 @@ interface GeoResultContract extends GeoData
     public function timeZone(): ?string;
 
     public function postalCode(): ?string;
+
+    public function data(): array;
 }

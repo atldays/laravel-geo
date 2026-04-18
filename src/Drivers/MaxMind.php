@@ -2,23 +2,25 @@
 
 namespace Atldays\Geo\Drivers;
 
+use Atldays\Geo\Contracts\GeoDataContract;
 use Atldays\Geo\Contracts\GeoDriver;
-use Atldays\Geo\Contracts\GeoResultContract;
-use Atldays\Geo\Contracts\Updatable;
-use Atldays\Geo\Data\GeoResult;
+use Atldays\Geo\Contracts\GeoDriverUpdatable;
+use Atldays\Geo\Data\GeoData;
 use Atldays\Geo\Data\MaxMindConfig;
 use Atldays\Geo\Data\UpdateOptions;
 use Atldays\Geo\Data\UpdateResult;
+use Atldays\Geo\Drivers\Concerns\InteractsWithDriverData;
 use Atldays\Geo\Exceptions\DriverException;
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use Atldays\Geo\Updaters\MaxMindUpdater;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Support\Arr;
 use MaxMind\Db\Reader;
 use Throwable;
 
-class MaxMind implements GeoDriver, Updatable
+class MaxMind implements GeoDriver, GeoDriverUpdatable
 {
+    use InteractsWithDriverData;
+
     protected ?Reader $reader = null;
 
     public function __construct(
@@ -34,7 +36,7 @@ class MaxMind implements GeoDriver, Updatable
         return $this->updater->update($options);
     }
 
-    public function locate(string $ip): GeoResultContract
+    public function resolve(string $ip): GeoDataContract
     {
         if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
             throw DriverException::invalidIp(self::class, $ip);
@@ -53,47 +55,26 @@ class MaxMind implements GeoDriver, Updatable
         }
 
         $data = is_array($record) ? $record : [];
+        $this->data = $data;
 
         if ($data === []) {
-            return GeoResult::unresolved($ip);
+            return GeoData::unresolved($ip);
         }
 
-        $continent = Arr::get($data, 'continent');
-        $country = Arr::get($data, 'country');
-        $city = Arr::get($data, 'city');
-        $registeredCountry = Arr::get($data, 'registered_country');
-        $subdivisions = Arr::get($data, 'subdivisions');
+        $continent = $this->continent();
+        $country = $this->country($continent);
 
-        return GeoResult::from([
+        return GeoData::from([
             'ip' => $ip,
-            'continent' => is_array($continent) ? $continent : null,
-            'country' => is_array($country) && is_array($continent)
-                ? [
-                    ...$country,
-                    'continent' => $continent,
-                ]
-                : null,
-            'city' => is_array($city) && is_array($country) && is_array($continent)
-                ? [
-                    ...$city,
-                    'country' => [
-                        ...$country,
-                        'continent' => $continent,
-                    ],
-                    'subdivisions' => is_array($subdivisions) ? $subdivisions : null,
-                ]
-                : null,
-            'registered_country' => is_array($registeredCountry) && is_array($continent)
-                ? [
-                    ...$registeredCountry,
-                    'continent' => $continent,
-                ]
-                : null,
-            'accuracy_radius' => data_get($data, 'location.accuracy_radius'),
-            'latitude' => data_get($data, 'location.latitude'),
-            'longitude' => data_get($data, 'location.longitude'),
-            'time_zone' => data_get($data, 'location.time_zone'),
-            'postal_code' => data_get($data, 'postal.code'),
+            'continent' => $continent,
+            'country' => $country,
+            'city' => $this->city($country),
+            'registered_country' => $this->registeredCountry($continent),
+            'accuracy_radius' => $this->accuracyRadius(),
+            'latitude' => $this->latitude(),
+            'longitude' => $this->longitude(),
+            'time_zone' => $this->timeZone(),
+            'postal_code' => $this->postalCode(),
             'data' => $data,
         ]);
     }
@@ -113,5 +94,73 @@ class MaxMind implements GeoDriver, Updatable
                 $exception,
             );
         }
+    }
+
+    protected function continent(): ?array
+    {
+        return $this->getArray('continent');
+    }
+
+    protected function country(?array $continent): ?array
+    {
+        $country = $this->getArray('country');
+
+        return is_array($country) && is_array($continent)
+            ? [
+                ...$country,
+                'continent' => $continent,
+            ]
+            : null;
+    }
+
+    protected function city(?array $country): ?array
+    {
+        $city = $this->getArray('city');
+        $subdivisions = $this->getArray('subdivisions');
+
+        return is_array($city) && is_array($country)
+            ? [
+                ...$city,
+                'country' => $country,
+                'subdivisions' => $subdivisions,
+            ]
+            : null;
+    }
+
+    protected function registeredCountry(?array $continent): ?array
+    {
+        $registeredCountry = $this->getArray('registered_country');
+
+        return is_array($registeredCountry) && is_array($continent)
+            ? [
+                ...$registeredCountry,
+                'continent' => $continent,
+            ]
+            : null;
+    }
+
+    protected function accuracyRadius(): ?int
+    {
+        return $this->getInt('location.accuracy_radius');
+    }
+
+    protected function latitude(): ?float
+    {
+        return $this->getFloat('location.latitude');
+    }
+
+    protected function longitude(): ?float
+    {
+        return $this->getFloat('location.longitude');
+    }
+
+    protected function timeZone(): ?string
+    {
+        return $this->getString('location.time_zone');
+    }
+
+    protected function postalCode(): ?string
+    {
+        return $this->getString('postal.code');
     }
 }

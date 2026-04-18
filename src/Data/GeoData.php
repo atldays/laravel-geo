@@ -5,13 +5,13 @@ namespace Atldays\Geo\Data;
 use Atldays\Geo\Contracts\CityContract;
 use Atldays\Geo\Contracts\ContinentContract;
 use Atldays\Geo\Contracts\CountryContract;
-use Atldays\Geo\Contracts\GeoResultContract;
+use Atldays\Geo\Contracts\GeoDataContract;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 #[MapInputName(SnakeCaseMapper::class)]
-class GeoResult extends Data implements GeoResultContract
+class GeoData extends Data implements GeoDataContract
 {
     public function __construct(
         public readonly string $ip,

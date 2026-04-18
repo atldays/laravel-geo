@@ -2,7 +2,7 @@
 
 namespace Atldays\Geo\Data;
 
-use RuntimeException;
+use InvalidArgumentException;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
@@ -26,37 +26,31 @@ class MaxMindConfig extends Data
         public string $metadataFilename,
     ) {}
 
-    public function requireCredentials(): void
+    public function getDatabaseDirectory(): string
     {
-        if ($this->accountId && $this->licenseKey) {
-            return;
-        }
-
-        throw new RuntimeException('MaxMind credentials are missing. Set MAXMIND_ACCOUNT_ID and MAXMIND_LICENSE_KEY.');
+        return $this->databasePath;
     }
 
-    public function requireDownloadSource(?string $editionId, ?string $downloadUrl): void
-    {
-        if ($editionId || $downloadUrl) {
-            return;
-        }
-
-        throw new RuntimeException('No MaxMind edition ID or download URL has been configured.');
-    }
-
-    public function metadataPath(): string
+    public function getMetadataPath(): string
     {
         return $this->databasePath . DIRECTORY_SEPARATOR . $this->metadataFilename;
     }
 
-    public function resolveDatabasePath(?string $discoveredFilename = null): string
+    public function getDatabaseFilename(): string
     {
-        $filename = $this->databaseFilename ?: $discoveredFilename;
-
-        if (!$filename) {
-            throw new RuntimeException('Unable to determine the MaxMind database filename.');
+        if (is_string($this->databaseFilename) && $this->databaseFilename !== '') {
+            return $this->databaseFilename;
         }
 
-        return $this->databasePath . DIRECTORY_SEPARATOR . $filename;
+        if (is_string($this->editionId) && $this->editionId !== '') {
+            return $this->editionId . '.mmdb';
+        }
+
+        throw new InvalidArgumentException('Unable to determine the MaxMind database filename.');
+    }
+
+    public function getResolvedDatabasePath(): string
+    {
+        return $this->databasePath . DIRECTORY_SEPARATOR . $this->getDatabaseFilename();
     }
 }

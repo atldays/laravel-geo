@@ -4,6 +4,7 @@ namespace Atldays\Geo;
 
 use Atldays\Geo\Commands\UpdateCommand;
 use Atldays\Geo\Data\MaxMindConfig;
+use Atldays\Geo\Drivers\MaxMind;
 use Atldays\Geo\Updaters\MaxMindUpdater;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Foundation\Application;
@@ -33,6 +34,13 @@ class GeoServiceProvider extends PackageServiceProvider
             return new MaxMindUpdater(
                 config: $app->make(MaxMindConfig::class),
                 files: $app->make(Filesystem::class),
+            );
+        });
+
+        $this->app->bind(MaxMind::class, function (Application $app): MaxMind {
+            return new MaxMind(
+                config: $app->make(MaxMindConfig::class),
+                updater: $app->make(MaxMindUpdater::class),
             );
         });
     }

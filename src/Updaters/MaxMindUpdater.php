@@ -6,6 +6,7 @@ use Atldays\Geo\Contracts\Updatable;
 use Atldays\Geo\Data\MaxMindConfig;
 use Atldays\Geo\Data\UpdateOptions;
 use Atldays\Geo\Data\UpdateResult;
+use Atldays\Geo\Exceptions\DriverUnavailableException;
 use FilesystemIterator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Client\ConnectionException;
@@ -15,7 +16,6 @@ use Illuminate\Support\Facades\Http;
 use JsonException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use RuntimeException;
 use SplFileInfo;
 
 class MaxMindUpdater implements Updatable
@@ -30,12 +30,19 @@ class MaxMindUpdater implements Updatable
      */
     public function update(UpdateOptions $options): UpdateResult
     {
+        $this->ensureCredentialsAreConfigured();
+
         $editionId = $this->config->editionId;
-        $downloadUrl = $this->config->downloadUrl ?? $this->buildDownloadUrl($editionId);
+        $downloadUrl = $this->config->downloadUrl;
         $force = $options->force;
 
-        $this->config->requireCredentials();
-        $this->config->requireDownloadSource($editionId, $downloadUrl);
+        if (!$downloadUrl) {
+            if (!$editionId) {
+                throw new DriverUnavailableException('No MaxMind edition ID or download URL has been configured.');
+            }
+
+            $downloadUrl = $this->buildDownloadUrl($editionId);
+        }
 
         $headers = $this->fetchHeaders($downloadUrl);
         $lastModified = $headers['last-modified'] ?? null;
@@ -46,7 +53,7 @@ class MaxMindUpdater implements Updatable
                 downloaded: false,
                 editionId: $editionId,
                 databasePath: $targetPath,
-                metadataPath: $this->config->metadataPath(),
+                metadataPath: $this->config->getMetadataPath(),
                 remoteLastModified: $lastModified,
             );
         }
@@ -55,7 +62,7 @@ class MaxMindUpdater implements Updatable
         $archivePath = $workingDirectory . DIRECTORY_SEPARATOR . 'database.tar.gz';
 
         $this->files->ensureDirectoryExists($workingDirectory);
-        $this->files->ensureDirectoryExists($this->config->databasePath);
+        $this->files->ensureDirectoryExists($this->config->getDatabaseDirectory());
 
         try {
             $this->downloadArchive($downloadUrl, $archivePath);
@@ -80,7 +87,7 @@ class MaxMindUpdater implements Updatable
                 downloaded: true,
                 editionId: $editionId,
                 databasePath: $finalPath,
-                metadataPath: $this->config->metadataPath(),
+                metadataPath: $this->config->getMetadataPath(),
                 remoteLastModified: $lastModified,
             );
         } finally {
@@ -98,7 +105,7 @@ class MaxMindUpdater implements Updatable
         ])->head($downloadUrl);
 
         if (!$response->successful()) {
-            throw new RuntimeException(sprintf(
+            throw new DriverUnavailableException(sprintf(
                 'Failed to read MaxMind release headers (%s).',
                 $response->status(),
             ));
@@ -118,7 +125,7 @@ class MaxMindUpdater implements Updatable
         ])->get($downloadUrl);
 
         if (!$response->successful()) {
-            throw new RuntimeException(sprintf(
+            throw new DriverUnavailableException(sprintf(
                 'Failed to download MaxMind archive (%s).',
                 $response->status(),
             ));
@@ -133,7 +140,7 @@ class MaxMindUpdater implements Updatable
     protected function extractDatabase(string $archivePath, string $workingDirectory): string
     {
         if (!class_exists(\PharData::class)) {
-            throw new RuntimeException('The PHP phar extension is required to extract MaxMind tar.gz archives.');
+            throw new DriverUnavailableException('The PHP phar extension is required to extract MaxMind tar.gz archives.');
         }
 
         $tarPath = substr($archivePath, 0, -3);
@@ -153,12 +160,12 @@ class MaxMindUpdater implements Updatable
             return $databasePath;
         }
 
-        throw new RuntimeException('MaxMind archive was downloaded, but no .mmdb file was found inside it.');
+        throw new DriverUnavailableException('MaxMind archive was downloaded, but no .mmdb file was found inside it.');
     }
 
     protected function storeDatabaseFile(string $databasePath): string
     {
-        $destination = $this->config->resolveDatabasePath(basename($databasePath));
+        $destination = $this->config->getResolvedDatabasePath();
         $temporaryDestination = $destination . '.tmp';
 
         $this->files->copy($databasePath, $temporaryDestination);
@@ -170,14 +177,14 @@ class MaxMindUpdater implements Updatable
     protected function resolveExistingDatabasePath(): ?string
     {
         if ($this->config->databaseFilename) {
-            return $this->config->resolveDatabasePath();
+            return $this->config->getResolvedDatabasePath();
         }
 
-        if (!$this->files->isDirectory($this->config->databasePath)) {
+        if (!$this->files->isDirectory($this->config->getDatabaseDirectory())) {
             return null;
         }
 
-        $matches = $this->files->glob($this->config->databasePath . DIRECTORY_SEPARATOR . '*.mmdb');
+        $matches = $this->files->glob($this->config->getDatabaseDirectory() . DIRECTORY_SEPARATOR . '*.mmdb');
 
         return $matches[0] ?? null;
     }
@@ -205,7 +212,7 @@ class MaxMindUpdater implements Updatable
     protected function buildDownloadUrl(?string $editionId): string
     {
         if (!$editionId) {
-            throw new RuntimeException('A MaxMind edition ID is required to build a download URL.');
+            throw new DriverUnavailableException('A MaxMind edition ID is required to build a download URL.');
         }
 
         return sprintf(
@@ -248,11 +255,20 @@ class MaxMindUpdater implements Updatable
     {
         $json = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
-        $this->files->put($this->config->metadataPath(), $json . PHP_EOL);
+        $this->files->put($this->config->getMetadataPath(), $json . PHP_EOL);
     }
 
     protected function temporaryDirectory(): string
     {
-        return $this->config->databasePath . DIRECTORY_SEPARATOR . '.tmp-maxmind-' . bin2hex(random_bytes(5));
+        return $this->config->getDatabaseDirectory() . DIRECTORY_SEPARATOR . '.tmp-maxmind-' . bin2hex(random_bytes(5));
+    }
+
+    protected function ensureCredentialsAreConfigured(): void
+    {
+        if ($this->config->accountId && $this->config->licenseKey) {
+            return;
+        }
+
+        throw new DriverUnavailableException('MaxMind credentials are missing. Set MAXMIND_ACCOUNT_ID and MAXMIND_LICENSE_KEY.');
     }
 }

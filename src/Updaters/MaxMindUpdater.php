@@ -13,24 +13,30 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
-use JsonException;
+use Random\RandomException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
 class MaxMindUpdater implements GeoDriverUpdatable
 {
+    use Concerns\InteractsWithMetadata;
+
     public function __construct(
         protected MaxMindConfig $config,
         protected Filesystem $files,
     ) {}
 
     /**
-     * @throws ConnectionException
+     * @throws ConnectionException|RandomException
      */
     public function update(UpdateOptions $options): UpdateResult
     {
-        $this->ensureCredentialsAreConfigured();
+        if (!$this->config->accountId || !$this->config->licenseKey) {
+            throw DriverUnavailableException::maxMind(
+                'Credentials are missing. Set MAXMIND_ACCOUNT_ID and MAXMIND_LICENSE_KEY.',
+            );
+        }
 
         $editionId = $this->config->editionId;
         $downloadUrl = $this->config->downloadUrl;
@@ -46,11 +52,47 @@ class MaxMindUpdater implements GeoDriverUpdatable
             $downloadUrl = $this->buildDownloadUrl($editionId);
         }
 
-        $headers = $this->fetchHeaders($downloadUrl);
-        $lastModified = $headers['last-modified'] ?? null;
-        $targetPath = $this->resolveExistingDatabasePath();
+        $headersResponse = $this->http()->withOptions([
+            'allow_redirects' => true,
+        ])->head($downloadUrl);
 
-        if (!$force && $targetPath && !$this->shouldDownload($targetPath, $lastModified)) {
+        if (!$headersResponse->successful()) {
+            throw DriverUnavailableException::maxMind(
+                sprintf('Failed to read release headers (%s).', $headersResponse->status()),
+            );
+        }
+
+        $headers = [];
+
+        foreach ($headersResponse->headers() as $name => $values) {
+            $headers[strtolower($name)] = is_array($values) ? ($values[0] ?? null) : $values;
+        }
+
+        $lastModified = $headers['last-modified'] ?? null;
+
+        $targetPath = null;
+
+        if ($this->config->databaseFilename) {
+            $targetPath = $this->config->getResolvedDatabasePath();
+        } elseif ($this->files->isDirectory($this->config->getDatabaseDirectory())) {
+            $matches = $this->files->glob($this->config->getDatabaseDirectory() . DIRECTORY_SEPARATOR . '*.mmdb');
+            $targetPath = $matches[0] ?? null;
+        }
+
+        $shouldDownload = true;
+
+        if ($targetPath && $this->files->exists($targetPath) && $lastModified !== null) {
+            $remoteTimestamp = strtotime($lastModified);
+            $localTimestamp = @filemtime($targetPath);
+
+            if ($remoteTimestamp !== false && $localTimestamp !== false) {
+                $shouldDownload = $remoteTimestamp > $localTimestamp;
+            }
+        } elseif ($targetPath && $this->files->exists($targetPath) && $lastModified === null) {
+            $shouldDownload = true;
+        }
+
+        if (!$force && $targetPath && !$shouldDownload) {
             return new UpdateResult(
                 downloaded: false,
                 editionId: $editionId,
@@ -60,19 +102,32 @@ class MaxMindUpdater implements GeoDriverUpdatable
             );
         }
 
-        $workingDirectory = $this->temporaryDirectory();
+        $workingDirectory = $this->config->getDatabaseDirectory() . DIRECTORY_SEPARATOR . '.tmp-maxmind-' . bin2hex(random_bytes(5));
         $archivePath = $workingDirectory . DIRECTORY_SEPARATOR . 'database.tar.gz';
 
         $this->files->ensureDirectoryExists($workingDirectory);
         $this->files->ensureDirectoryExists($this->config->getDatabaseDirectory());
 
         try {
-            $this->downloadArchive($downloadUrl, $archivePath);
+            $downloadResponse = $this->http()->withOptions([
+                'allow_redirects' => true,
+                'sink' => $archivePath,
+            ])->get($downloadUrl);
+
+            if (!$downloadResponse->successful()) {
+                throw DriverUnavailableException::maxMind(
+                    sprintf('Failed to download the database archive (%s).', $downloadResponse->status()),
+                );
+            }
 
             $databasePath = $this->extractDatabase($archivePath, $workingDirectory);
-            $finalPath = $this->storeDatabaseFile($databasePath);
+            $finalPath = $this->config->getResolvedDatabasePath();
+            $temporaryDestination = $finalPath . '.tmp';
 
-            $this->writeMetadata([
+            $this->files->copy($databasePath, $temporaryDestination);
+            $this->files->move($temporaryDestination, $finalPath);
+
+            $this->writeMetadata($this->config->getMetadataPath(), [
                 'edition_id' => $editionId,
                 'download_url' => $downloadUrl,
                 'database_path' => $finalPath,
@@ -94,41 +149,6 @@ class MaxMindUpdater implements GeoDriverUpdatable
             );
         } finally {
             $this->files->deleteDirectory($workingDirectory);
-        }
-    }
-
-    /**
-     * @throws ConnectionException
-     */
-    protected function fetchHeaders(string $downloadUrl): array
-    {
-        $response = $this->http()->withOptions([
-            'allow_redirects' => true,
-        ])->head($downloadUrl);
-
-        if (!$response->successful()) {
-            throw DriverUnavailableException::maxMind(
-                sprintf('Failed to read release headers (%s).', $response->status()),
-            );
-        }
-
-        return $this->normalizeHeaders($response->headers());
-    }
-
-    /**
-     * @throws ConnectionException
-     */
-    protected function downloadArchive(string $downloadUrl, string $archivePath): void
-    {
-        $response = $this->http()->withOptions([
-            'allow_redirects' => true,
-            'sink' => $archivePath,
-        ])->get($downloadUrl);
-
-        if (!$response->successful()) {
-            throw DriverUnavailableException::maxMind(
-                sprintf('Failed to download the database archive (%s).', $response->status()),
-            );
         }
     }
 
@@ -167,52 +187,6 @@ class MaxMindUpdater implements GeoDriverUpdatable
         );
     }
 
-    protected function storeDatabaseFile(string $databasePath): string
-    {
-        $destination = $this->config->getResolvedDatabasePath();
-        $temporaryDestination = $destination . '.tmp';
-
-        $this->files->copy($databasePath, $temporaryDestination);
-        $this->files->move($temporaryDestination, $destination);
-
-        return $destination;
-    }
-
-    protected function resolveExistingDatabasePath(): ?string
-    {
-        if ($this->config->databaseFilename) {
-            return $this->config->getResolvedDatabasePath();
-        }
-
-        if (!$this->files->isDirectory($this->config->getDatabaseDirectory())) {
-            return null;
-        }
-
-        $matches = $this->files->glob($this->config->getDatabaseDirectory() . DIRECTORY_SEPARATOR . '*.mmdb');
-
-        return $matches[0] ?? null;
-    }
-
-    protected function shouldDownload(string $localPath, ?string $remoteLastModified): bool
-    {
-        if (!$this->files->exists($localPath)) {
-            return true;
-        }
-
-        if ($remoteLastModified === null) {
-            return true;
-        }
-
-        $remoteTimestamp = strtotime($remoteLastModified);
-        $localTimestamp = @filemtime($localPath);
-
-        if ($remoteTimestamp === false || $localTimestamp === false) {
-            return true;
-        }
-
-        return $remoteTimestamp > $localTimestamp;
-    }
-
     protected function buildDownloadUrl(?string $editionId): string
     {
         if (!$editionId) {
@@ -241,42 +215,5 @@ class MaxMindUpdater implements GeoDriverUpdatable
         }
 
         return null;
-    }
-
-    protected function normalizeHeaders(array $headers): array
-    {
-        $normalized = [];
-
-        foreach ($headers as $name => $values) {
-            $normalized[strtolower($name)] = is_array($values) ? ($values[0] ?? null) : $values;
-        }
-
-        return $normalized;
-    }
-
-    /**
-     * @throws JsonException
-     */
-    protected function writeMetadata(array $payload): void
-    {
-        $json = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
-
-        $this->files->put($this->config->getMetadataPath(), $json . PHP_EOL);
-    }
-
-    protected function temporaryDirectory(): string
-    {
-        return $this->config->getDatabaseDirectory() . DIRECTORY_SEPARATOR . '.tmp-maxmind-' . bin2hex(random_bytes(5));
-    }
-
-    protected function ensureCredentialsAreConfigured(): void
-    {
-        if ($this->config->accountId && $this->config->licenseKey) {
-            return;
-        }
-
-        throw DriverUnavailableException::maxMind(
-            'Credentials are missing. Set MAXMIND_ACCOUNT_ID and MAXMIND_LICENSE_KEY.',
-        );
     }
 }

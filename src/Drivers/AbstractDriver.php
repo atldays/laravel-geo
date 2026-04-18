@@ -25,7 +25,7 @@ abstract class AbstractDriver implements GeoDriver
     final public function resolve(string $ip): GeoDataContract
     {
         if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
-            throw DriverException::invalidIp(static::class, $ip);
+            throw DriverException::invalidIp($ip);
         }
 
         $this->ip = $ip;

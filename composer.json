@@ -38,7 +38,10 @@
         "laravel": {
             "providers": [
                 "Atldays\\Geo\\GeoServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Geo": "Atldays\\Geo\\Facades\\Geo"
+            }
         }
     },
     "minimum-stability": "stable",

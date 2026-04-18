@@ -1,0 +1,33 @@
+<?php
+
+namespace Atldays\Geo\Facades;
+
+use Atldays\Geo\Contracts\CityContract;
+use Atldays\Geo\Contracts\ContinentContract;
+use Atldays\Geo\Contracts\CountryContract;
+use Atldays\Geo\Contracts\GeoDataContract;
+use Illuminate\Support\Facades\Facade;
+
+/**
+ * @method static string ip()
+ * @method static ?ContinentContract continent()
+ * @method static ?CountryContract country()
+ * @method static ?CityContract city()
+ * @method static ?CountryContract registeredCountry()
+ * @method static ?int accuracyRadius()
+ * @method static ?float latitude()
+ * @method static ?float longitude()
+ * @method static ?string timeZone()
+ * @method static ?string postalCode()
+ * @method static array data()
+ * @method static array toArray()
+ *
+ * @see GeoDataContract
+ */
+class Geo extends Facade
+{
+    protected static function getFacadeAccessor(): string
+    {
+        return 'geo';
+    }
+}

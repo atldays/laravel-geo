@@ -26,6 +26,22 @@ class GeoServiceProvider extends PackageServiceProvider
 
     public function registeringPackage(): void
     {
+        $this->app->singleton(GeoManager::class, function (Application $app): GeoManager {
+            return new GeoManager(
+                config: $app->make(Config::class),
+                container: $app,
+            );
+        });
+
+        $this->app->bind('geo', function (Application $app) {
+            return $app->make(GeoManager::class)->request();
+        });
+
+        $this->registerMaxMind();
+    }
+
+    protected function registerMaxMind(): void
+    {
         $this->app->singleton(MaxMindConfig::class, function (Application $app): MaxMindConfig {
             return MaxMindConfig::from($app->make(Config::class)->get('geo.maxmind', []));
         });

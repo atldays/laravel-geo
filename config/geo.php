@@ -133,7 +133,7 @@ return [
         | MaxMind database inside the Laravel application.
         |
         */
-        'metadata_filename' => env('MAXMIND_METADATA_FILENAME', 'maxmind-download.json'),
+        'metadata_filename' => env('MAXMIND_METADATA_FILENAME', 'metadata.json'),
 
     ],
 ];

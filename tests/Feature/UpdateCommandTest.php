@@ -13,7 +13,7 @@ class UpdateCommandTest extends TestCase
         Config::set('geo.maxmind.license_key', null);
 
         $this->artisan('geo:update')
-            ->expectsOutputToContain('MaxMind credentials are missing.')
+            ->expectsOutputToContain('Credentials are missing.')
             ->assertExitCode(1);
     }
 }

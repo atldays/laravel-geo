@@ -6,11 +6,11 @@ use Atldays\Geo\Contracts\GeoDriver;
 use Atldays\Geo\Contracts\GeoResultContract;
 use Atldays\Geo\Data\GeoResult;
 use Atldays\Geo\Exceptions\DriverUnavailableException;
+use Atldays\Geo\Exceptions\GeoException;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
-use RuntimeException;
 
 class GeoManager
 {
@@ -37,10 +37,7 @@ class GeoManager
         }
 
         if ($exception instanceof DriverUnavailableException) {
-            throw new DriverUnavailableException(
-                'All configured geo drivers failed to resolve the provided IP.',
-                previous: $exception,
-            );
+            throw DriverUnavailableException::allDriversFailed($exception);
         }
 
         return GeoResult::unresolved($ip);
@@ -54,7 +51,7 @@ class GeoManager
         $request ??= $this->container->make('request');
 
         if (!$request instanceof Request) {
-            throw new RuntimeException('Unable to resolve the current Laravel request instance.');
+            throw GeoException::unableToResolveCurrentRequest();
         }
 
         return $this->ip($request->fakeClientIp() ?? $request->realClientIp());
@@ -77,15 +74,11 @@ class GeoManager
         ]));
 
         foreach ($drivers as $driverClass) {
-            if (
-                !is_string($driverClass)
-                || !is_a($driverClass, GeoDriver::class, true)
-            ) {
-                throw new RuntimeException(sprintf(
-                    'Configured geo driver [%s] must implement [%s].',
+            if (!is_string($driverClass) || !is_a($driverClass, GeoDriver::class, true)) {
+                throw GeoException::invalidConfiguredDriver(
                     is_string($driverClass) ? $driverClass : get_debug_type($driverClass),
                     GeoDriver::class,
-                ));
+                );
             }
 
             $this->loaded[] = $this->container->make($driverClass);

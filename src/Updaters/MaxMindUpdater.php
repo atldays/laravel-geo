@@ -20,6 +20,8 @@ use SplFileInfo;
 
 class MaxMindUpdater implements Updatable
 {
+    protected const DRIVER = 'MaxMind';
+
     public function __construct(
         protected MaxMindConfig $config,
         protected Filesystem $files,
@@ -38,7 +40,10 @@ class MaxMindUpdater implements Updatable
 
         if (!$downloadUrl) {
             if (!$editionId) {
-                throw new DriverUnavailableException('No MaxMind edition ID or download URL has been configured.');
+                throw DriverUnavailableException::because(
+                    self::DRIVER,
+                    'No edition ID or download URL has been configured.',
+                );
             }
 
             $downloadUrl = $this->buildDownloadUrl($editionId);
@@ -105,10 +110,10 @@ class MaxMindUpdater implements Updatable
         ])->head($downloadUrl);
 
         if (!$response->successful()) {
-            throw new DriverUnavailableException(sprintf(
-                'Failed to read MaxMind release headers (%s).',
-                $response->status(),
-            ));
+            throw DriverUnavailableException::because(
+                self::DRIVER,
+                sprintf('Failed to read release headers (%s).', $response->status()),
+            );
         }
 
         return $this->normalizeHeaders($response->headers());
@@ -125,10 +130,10 @@ class MaxMindUpdater implements Updatable
         ])->get($downloadUrl);
 
         if (!$response->successful()) {
-            throw new DriverUnavailableException(sprintf(
-                'Failed to download MaxMind archive (%s).',
-                $response->status(),
-            ));
+            throw DriverUnavailableException::because(
+                self::DRIVER,
+                sprintf('Failed to download the database archive (%s).', $response->status()),
+            );
         }
     }
 
@@ -140,7 +145,10 @@ class MaxMindUpdater implements Updatable
     protected function extractDatabase(string $archivePath, string $workingDirectory): string
     {
         if (!class_exists(\PharData::class)) {
-            throw new DriverUnavailableException('The PHP phar extension is required to extract MaxMind tar.gz archives.');
+            throw DriverUnavailableException::because(
+                self::DRIVER,
+                'The PHP phar extension is required to extract tar.gz archives.',
+            );
         }
 
         $tarPath = substr($archivePath, 0, -3);
@@ -160,7 +168,10 @@ class MaxMindUpdater implements Updatable
             return $databasePath;
         }
 
-        throw new DriverUnavailableException('MaxMind archive was downloaded, but no .mmdb file was found inside it.');
+        throw DriverUnavailableException::because(
+            self::DRIVER,
+            'The archive was downloaded, but no .mmdb file was found inside it.',
+        );
     }
 
     protected function storeDatabaseFile(string $databasePath): string
@@ -212,7 +223,10 @@ class MaxMindUpdater implements Updatable
     protected function buildDownloadUrl(?string $editionId): string
     {
         if (!$editionId) {
-            throw new DriverUnavailableException('A MaxMind edition ID is required to build a download URL.');
+            throw DriverUnavailableException::because(
+                self::DRIVER,
+                'An edition ID is required to build a download URL.',
+            );
         }
 
         return sprintf(
@@ -269,6 +283,9 @@ class MaxMindUpdater implements Updatable
             return;
         }
 
-        throw new DriverUnavailableException('MaxMind credentials are missing. Set MAXMIND_ACCOUNT_ID and MAXMIND_LICENSE_KEY.');
+        throw DriverUnavailableException::because(
+            self::DRIVER,
+            'Credentials are missing. Set MAXMIND_ACCOUNT_ID and MAXMIND_LICENSE_KEY.',
+        );
     }
 }

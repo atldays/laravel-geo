@@ -9,12 +9,12 @@ use Atldays\Geo\Data\GeoResult;
 use Atldays\Geo\Data\MaxMindConfig;
 use Atldays\Geo\Data\UpdateOptions;
 use Atldays\Geo\Data\UpdateResult;
+use Atldays\Geo\Exceptions\DriverException;
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use Atldays\Geo\Updaters\MaxMindUpdater;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Arr;
 use MaxMind\Db\Reader;
-use RuntimeException;
 use Throwable;
 
 class MaxMind implements GeoDriver, Updatable
@@ -37,7 +37,7 @@ class MaxMind implements GeoDriver, Updatable
     public function locate(string $ip): GeoResultContract
     {
         if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
-            throw new RuntimeException(sprintf('The provided IP [%s] is invalid.', $ip));
+            throw DriverException::invalidIp(self::class, $ip);
         }
 
         try {
@@ -45,9 +45,10 @@ class MaxMind implements GeoDriver, Updatable
         } catch (DriverUnavailableException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
-            throw new DriverUnavailableException(
-                'The MaxMind driver is unavailable.',
-                previous: $exception,
+            throw DriverUnavailableException::because(
+                self::class,
+                'The database reader could not process the requested IP.',
+                $exception,
             );
         }
 
@@ -106,9 +107,10 @@ class MaxMind implements GeoDriver, Updatable
         try {
             return $this->reader = new Reader($this->config->getResolvedDatabasePath());
         } catch (Throwable $exception) {
-            throw new DriverUnavailableException(
+            throw DriverUnavailableException::because(
+                self::class,
                 'No MaxMind database file could be found in the configured directory.',
-                previous: $exception,
+                $exception,
             );
         }
     }

@@ -3,24 +3,19 @@
 namespace Atldays\Geo\Drivers;
 
 use Atldays\Geo\Contracts\GeoDataContract;
-use Atldays\Geo\Contracts\GeoDriver;
 use Atldays\Geo\Contracts\GeoDriverUpdatable;
 use Atldays\Geo\Data\GeoData;
 use Atldays\Geo\Data\MaxMindConfig;
 use Atldays\Geo\Data\UpdateOptions;
 use Atldays\Geo\Data\UpdateResult;
-use Atldays\Geo\Drivers\Concerns\InteractsWithDriverData;
-use Atldays\Geo\Exceptions\DriverException;
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use Atldays\Geo\Updaters\MaxMindUpdater;
 use Illuminate\Http\Client\ConnectionException;
 use MaxMind\Db\Reader;
 use Throwable;
 
-class MaxMind implements GeoDriver, GeoDriverUpdatable
+class MaxMind extends AbstractDriver implements GeoDriverUpdatable
 {
-    use InteractsWithDriverData;
-
     protected ?Reader $reader = null;
 
     public function __construct(
@@ -36,14 +31,10 @@ class MaxMind implements GeoDriver, GeoDriverUpdatable
         return $this->updater->update($options);
     }
 
-    public function resolve(string $ip): GeoDataContract
+    protected function fetch(): array
     {
-        if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
-            throw DriverException::invalidIp(self::class, $ip);
-        }
-
         try {
-            $record = $this->reader()->get($ip);
+            $record = $this->reader()->get((string)$this->ip());
         } catch (DriverUnavailableException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
@@ -54,18 +45,16 @@ class MaxMind implements GeoDriver, GeoDriverUpdatable
             );
         }
 
-        $data = is_array($record) ? $record : [];
-        $this->data = $data;
+        return is_array($record) ? $record : [];
+    }
 
-        if ($data === []) {
-            return GeoData::unresolved($ip);
-        }
-
+    protected function result(): GeoDataContract
+    {
         $continent = $this->continent();
         $country = $this->country($continent);
 
         return GeoData::from([
-            'ip' => $ip,
+            'ip' => $this->ip(),
             'continent' => $continent,
             'country' => $country,
             'city' => $this->city($country),
@@ -75,7 +64,7 @@ class MaxMind implements GeoDriver, GeoDriverUpdatable
             'longitude' => $this->longitude(),
             'time_zone' => $this->timeZone(),
             'postal_code' => $this->postalCode(),
-            'data' => $data,
+            'data' => $this->data(),
         ]);
     }
 
@@ -98,12 +87,12 @@ class MaxMind implements GeoDriver, GeoDriverUpdatable
 
     protected function continent(): ?array
     {
-        return $this->getArray('continent');
+        return $this->dataArray('continent');
     }
 
     protected function country(?array $continent): ?array
     {
-        $country = $this->getArray('country');
+        $country = $this->dataArray('country');
 
         return is_array($country) && is_array($continent)
             ? [
@@ -115,8 +104,8 @@ class MaxMind implements GeoDriver, GeoDriverUpdatable
 
     protected function city(?array $country): ?array
     {
-        $city = $this->getArray('city');
-        $subdivisions = $this->getArray('subdivisions');
+        $city = $this->dataArray('city');
+        $subdivisions = $this->dataArray('subdivisions');
 
         return is_array($city) && is_array($country)
             ? [
@@ -129,7 +118,7 @@ class MaxMind implements GeoDriver, GeoDriverUpdatable
 
     protected function registeredCountry(?array $continent): ?array
     {
-        $registeredCountry = $this->getArray('registered_country');
+        $registeredCountry = $this->dataArray('registered_country');
 
         return is_array($registeredCountry) && is_array($continent)
             ? [
@@ -141,26 +130,26 @@ class MaxMind implements GeoDriver, GeoDriverUpdatable
 
     protected function accuracyRadius(): ?int
     {
-        return $this->getInt('location.accuracy_radius');
+        return $this->dataInt('location.accuracy_radius');
     }
 
     protected function latitude(): ?float
     {
-        return $this->getFloat('location.latitude');
+        return $this->dataFloat('location.latitude');
     }
 
     protected function longitude(): ?float
     {
-        return $this->getFloat('location.longitude');
+        return $this->dataFloat('location.longitude');
     }
 
     protected function timeZone(): ?string
     {
-        return $this->getString('location.time_zone');
+        return $this->dataString('location.time_zone');
     }
 
     protected function postalCode(): ?string
     {
-        return $this->getString('postal.code');
+        return $this->dataString('postal.code');
     }
 }

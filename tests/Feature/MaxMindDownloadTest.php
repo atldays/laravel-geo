@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Atldays\Geo\Data\UpdateOptions;
+use Atldays\Geo\Exceptions\DriverUnavailableException;
 use Atldays\Geo\Updaters\MaxMindUpdater;
 use Illuminate\Filesystem\Filesystem;
 use Tests\TestCase;
@@ -21,7 +22,15 @@ class MaxMindDownloadTest extends TestCase
         $files->deleteDirectory($databasePath);
         $files->ensureDirectoryExists($databasePath);
 
-        $result = $this->app->make(MaxMindUpdater::class)->update(new UpdateOptions(force: true));
+        try {
+            $result = $this->app->make(MaxMindUpdater::class)->update(new UpdateOptions(force: true));
+        } catch (DriverUnavailableException $exception) {
+            if (str_contains($exception->getMessage(), '(429)')) {
+                $this->markTestSkipped('MaxMind rate-limited the live download test.');
+            }
+
+            throw $exception;
+        }
 
         $this->assertTrue($files->exists($result->databasePath));
         $this->assertSame('mmdb', pathinfo($result->databasePath, PATHINFO_EXTENSION));

@@ -4,9 +4,7 @@ namespace Atldays\Geo\Data;
 
 use Atldays\Geo\Contracts\SubdivisionContract;
 use Atldays\Geo\Data\Casts\LocalizedNameCast;
-use Spatie\LaravelData\Attributes\MapInputName;
-use Spatie\LaravelData\Attributes\MapName;
-use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Attributes\{MapInputName, MapName, WithCast};
 use Spatie\LaravelData\Data;
 
 class Subdivision extends Data implements SubdivisionContract

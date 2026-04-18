@@ -2,10 +2,7 @@
 
 namespace Tests\Feature;
 
-use Atldays\Geo\Contracts\CityContract;
-use Atldays\Geo\Contracts\ContinentContract;
-use Atldays\Geo\Contracts\CountryContract;
-use Atldays\Geo\Contracts\GeoDataContract;
+use Atldays\Geo\Contracts\{CityContract, ContinentContract, CountryContract, GeoDataContract};
 use Atldays\Geo\GeoManager;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;

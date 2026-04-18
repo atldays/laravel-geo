@@ -2,12 +2,9 @@
 
 namespace Atldays\Geo\Data;
 
-use Atldays\Geo\Contracts\ContinentContract;
-use Atldays\Geo\Contracts\CountryContract;
+use Atldays\Geo\Contracts\{ContinentContract, CountryContract};
 use Atldays\Geo\Data\Casts\LocalizedNameCast;
-use Spatie\LaravelData\Attributes\MapInputName;
-use Spatie\LaravelData\Attributes\MapName;
-use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Attributes\{MapInputName, MapName, WithCast};
 use Spatie\LaravelData\Data;
 
 class Country extends Data implements CountryContract

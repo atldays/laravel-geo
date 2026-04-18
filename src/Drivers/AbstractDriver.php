@@ -2,8 +2,7 @@
 
 namespace Atldays\Geo\Drivers;
 
-use Atldays\Geo\Contracts\GeoDataContract;
-use Atldays\Geo\Contracts\GeoDriver;
+use Atldays\Geo\Contracts\{GeoDataContract, GeoDriver};
 use Atldays\Geo\Data\GeoData;
 use Atldays\Geo\Exceptions\DriverException;
 

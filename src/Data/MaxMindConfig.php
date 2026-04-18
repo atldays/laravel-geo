@@ -3,8 +3,7 @@
 namespace Atldays\Geo\Data;
 
 use InvalidArgumentException;
-use Spatie\LaravelData\Attributes\MapInputName;
-use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Attributes\{MapInputName, WithCast};
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 

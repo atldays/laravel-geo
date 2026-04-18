@@ -2,8 +2,7 @@
 
 namespace Tests\Feature;
 
-use Atldays\Geo\Data\MaxMindConfig;
-use Atldays\Geo\Data\UpdateOptions;
+use Atldays\Geo\Data\{MaxMindConfig, UpdateOptions};
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use Atldays\Geo\Updaters\MaxMindUpdater;
 use Illuminate\Filesystem\Filesystem;

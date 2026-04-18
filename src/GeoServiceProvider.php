@@ -11,8 +11,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config as ConfigFacade;
-use Spatie\LaravelPackageTools\Package;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Spatie\LaravelPackageTools\{Package, PackageServiceProvider};
 
 class GeoServiceProvider extends PackageServiceProvider
 {

@@ -2,16 +2,13 @@
 
 namespace Atldays\Geo\Drivers;
 
-use Atldays\Geo\Contracts\GeoDataContract;
-use Atldays\Geo\Contracts\GeoDriverUpdatable;
-use Atldays\Geo\Data\GeoData;
-use Atldays\Geo\Data\MaxMindConfig;
-use Atldays\Geo\Data\UpdateOptions;
-use Atldays\Geo\Data\UpdateResult;
+use Atldays\Geo\Contracts\{GeoDataContract, GeoDriverUpdatable};
+use Atldays\Geo\Data\{GeoData, MaxMindConfig, UpdateOptions, UpdateResult};
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use Atldays\Geo\Updaters\MaxMindUpdater;
 use Illuminate\Http\Client\ConnectionException;
 use MaxMind\Db\Reader;
+use Random\RandomException;
 use Throwable;
 
 class MaxMind extends AbstractDriver implements GeoDriverUpdatable
@@ -24,7 +21,7 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
     ) {}
 
     /**
-     * @throws ConnectionException
+     * @throws ConnectionException|RandomException
      */
     public function update(UpdateOptions $options): UpdateResult
     {

@@ -2,14 +2,10 @@
 
 namespace Atldays\Geo\Data;
 
-use Atldays\Geo\Contracts\CityContract;
-use Atldays\Geo\Contracts\CountryContract;
+use Atldays\Geo\Contracts\{CityContract, CountryContract};
 use Atldays\Geo\Data\Casts\LocalizedNameCast;
 use Illuminate\Support\Collection;
-use Spatie\LaravelData\Attributes\DataCollectionOf;
-use Spatie\LaravelData\Attributes\MapInputName;
-use Spatie\LaravelData\Attributes\MapName;
-use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Attributes\{DataCollectionOf, MapInputName, MapName, WithCast};
 use Spatie\LaravelData\Data;
 
 class City extends Data implements CityContract

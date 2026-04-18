@@ -3,16 +3,12 @@
 namespace Atldays\Geo\Updaters;
 
 use Atldays\Geo\Contracts\GeoDriverUpdatable;
-use Atldays\Geo\Data\MaxMindConfig;
-use Atldays\Geo\Data\UpdateOptions;
-use Atldays\Geo\Data\UpdateResult;
+use Atldays\Geo\Data\{MaxMindConfig, UpdateOptions, UpdateResult};
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use FilesystemIterator;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\PendingRequest;
-use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\{ConnectionException, PendingRequest};
+use Illuminate\Support\Facades\{Date, Http};
 use Random\RandomException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;

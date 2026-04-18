@@ -7,10 +7,12 @@
         "concat_space": {
             "spacing": "one"
         },
+        "group_import": true,
         "not_operator_with_successor_space": false,
         "phpdoc_align": {
             "align": "left",
             "spacing": 1
-        }
+        },
+        "single_import_per_statement": false
     }
 }

@@ -2,14 +2,11 @@
 
 namespace Atldays\Geo;
 
-use Atldays\Geo\Contracts\GeoDataContract;
-use Atldays\Geo\Contracts\GeoDriver;
+use Atldays\Geo\Contracts\{GeoDataContract, GeoDriver};
 use Atldays\Geo\Data\GeoData;
-use Atldays\Geo\Exceptions\DriverUnavailableException;
-use Atldays\Geo\Exceptions\GeoException;
+use Atldays\Geo\Exceptions\{DriverUnavailableException, GeoException};
 use Illuminate\Contracts\Config\Repository as Config;
-use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Container\{BindingResolutionException, Container};
 use Illuminate\Http\Request;
 
 class GeoManager

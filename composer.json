@@ -31,7 +31,8 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/phpunit",
+        "test": "vendor/bin/phpunit --testsuite Feature",
+        "test:live": "vendor/bin/phpunit --testsuite Live",
         "format": "vendor/bin/pint",
         "format:test": "vendor/bin/pint --test"
     },

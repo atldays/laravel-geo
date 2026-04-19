@@ -3,8 +3,8 @@
 namespace Atldays\Geo;
 
 use Atldays\Geo\Commands\UpdateCommand;
-use Atldays\Geo\Data\MaxMindConfig;
-use Atldays\Geo\Drivers\MaxMind;
+use Atldays\Geo\Data\{IpApiConfig, MaxMindConfig};
+use Atldays\Geo\Drivers\{IpApi, MaxMind};
 use Atldays\Geo\Updaters\MaxMindUpdater;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Foundation\Application;
@@ -37,6 +37,7 @@ class GeoServiceProvider extends PackageServiceProvider
         });
 
         $this->registerMaxMind();
+        $this->registerIpApi();
     }
 
     protected function registerMaxMind(): void
@@ -56,6 +57,19 @@ class GeoServiceProvider extends PackageServiceProvider
             return new MaxMind(
                 config: $app->make(MaxMindConfig::class),
                 updater: $app->make(MaxMindUpdater::class),
+            );
+        });
+    }
+
+    protected function registerIpApi(): void
+    {
+        $this->app->singleton(IpApiConfig::class, function (Application $app): IpApiConfig {
+            return IpApiConfig::from($app->make(Config::class)->get('geo.ip_api', []));
+        });
+
+        $this->app->bind(IpApi::class, function (Application $app): IpApi {
+            return new IpApi(
+                config: $app->make(IpApiConfig::class),
             );
         });
     }

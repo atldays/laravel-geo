@@ -59,8 +59,12 @@ abstract class AbstractDriver implements GeoDriver
     /**
      * Get the IP currently being resolved by the driver.
      */
-    protected function ip(): ?string
+    protected function ip(): string
     {
+        if ($this->ip === null) {
+            throw DriverException::missingIp();
+        }
+
         return $this->ip;
     }
 

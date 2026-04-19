@@ -42,18 +42,14 @@ class UpdateCommand extends Command
                 return self::FAILURE;
             }
 
-            if (!$result->downloaded) {
-                $this->line(sprintf('Already current: %s', $result->databasePath));
+            if (!$result->isDownloaded()) {
+                $this->line(sprintf('Already current: %s', $result->getPath()));
                 $this->newLine();
 
                 continue;
             }
 
-            $this->line(sprintf('Stored database at %s', $result->databasePath));
-
-            if (!empty($result->remoteLastModified)) {
-                $this->line(sprintf('Release date: %s', $result->remoteLastModified));
-            }
+            $this->line(sprintf('Stored database at %s', $result->getPath()));
 
             $this->newLine();
         }

@@ -2,8 +2,8 @@
 
 namespace Atldays\Geo\Drivers;
 
-use Atldays\Geo\Contracts\{GeoDataContract, GeoDriverUpdatable};
-use Atldays\Geo\Data\{GeoData, MaxMindConfig, UpdateOptions, UpdateResult};
+use Atldays\Geo\Contracts\{GeoDataContract, GeoDriverUpdatable, UpdateResultContract};
+use Atldays\Geo\Data\{GeoData, MaxMindConfig, UpdateOptions};
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use Atldays\Geo\Updaters\MaxMindUpdater;
 use Illuminate\Http\Client\ConnectionException;
@@ -23,7 +23,7 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
     /**
      * @throws ConnectionException|RandomException
      */
-    public function update(UpdateOptions $options): UpdateResult
+    public function update(UpdateOptions $options): UpdateResultContract
     {
         return $this->updater->update($options);
     }
@@ -31,7 +31,7 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
     protected function fetch(): array
     {
         try {
-            $record = $this->reader()->get((string)$this->ip());
+            $record = $this->reader()->get($this->ip());
         } catch (DriverUnavailableException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
@@ -84,7 +84,14 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
 
     protected function continent(): ?array
     {
-        return $this->dataArray('continent');
+        $continent = $this->dataArray('continent');
+
+        return is_array($continent)
+            ? [
+                'name' => $this->localizedName($continent['names'] ?? null),
+                'code' => $continent['code'] ?? null,
+            ]
+            : null;
     }
 
     protected function country(?array $continent): ?array
@@ -93,7 +100,8 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
 
         return is_array($country) && is_array($continent)
             ? [
-                ...$country,
+                'name' => $this->localizedName($country['names'] ?? null),
+                'iso_code' => $country['iso_code'] ?? null,
                 'continent' => $continent,
             ]
             : null;
@@ -106,9 +114,9 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
 
         return is_array($city) && is_array($country)
             ? [
-                ...$city,
+                'name' => $this->localizedName($city['names'] ?? null),
                 'country' => $country,
-                'subdivisions' => $subdivisions,
+                'subdivisions' => $this->normalizeSubdivisions($subdivisions),
             ]
             : null;
     }
@@ -119,7 +127,8 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
 
         return is_array($registeredCountry) && is_array($continent)
             ? [
-                ...$registeredCountry,
+                'name' => $this->localizedName($registeredCountry['names'] ?? null),
+                'iso_code' => $registeredCountry['iso_code'] ?? null,
                 'continent' => $continent,
             ]
             : null;
@@ -148,5 +157,52 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
     protected function postalCode(): ?string
     {
         return $this->dataString('postal.code');
+    }
+
+    protected function normalizeSubdivisions(?array $subdivisions): ?array
+    {
+        if ($subdivisions === null) {
+            return null;
+        }
+
+        $normalized = array_values(array_filter(array_map(function (mixed $subdivision): ?array {
+            if (!is_array($subdivision)) {
+                return null;
+            }
+
+            return [
+                'name' => $this->localizedName($subdivision['names'] ?? null),
+                'iso_code' => $subdivision['iso_code'] ?? null,
+            ];
+        }, $subdivisions)));
+
+        return $normalized === [] ? null : $normalized;
+    }
+
+    protected function localizedName(mixed $value): ?string
+    {
+        if (is_string($value)) {
+            $value = trim($value);
+
+            return $value === '' ? null : $value;
+        }
+
+        if (!is_array($value)) {
+            return null;
+        }
+
+        $preferred = $value['en'] ?? null;
+
+        if (is_string($preferred) && trim($preferred) !== '') {
+            return trim($preferred);
+        }
+
+        foreach ($value as $name) {
+            if (is_string($name) && trim($name) !== '') {
+                return trim($name);
+            }
+        }
+
+        return null;
     }
 }

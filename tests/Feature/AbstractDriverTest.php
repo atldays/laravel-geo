@@ -19,6 +19,16 @@ class AbstractDriverTest extends TestCase
         $driver->resolve('invalid-ip');
     }
 
+    public function test_abstract_driver_rejects_access_to_ip_before_resolve(): void
+    {
+        $driver = new FakeDriver;
+
+        $this->expectException(DriverException::class);
+        $this->expectExceptionMessage('The driver IP has not been initialized yet.');
+
+        $driver->currentIp();
+    }
+
     public function test_abstract_driver_returns_unresolved_geo_data_for_empty_payload(): void
     {
         $driver = new FakeDriver([
@@ -91,6 +101,11 @@ class FakeDriver extends AbstractDriver
         return $this->dataString('postal.code');
     }
 
+    public function currentIp(): string
+    {
+        return $this->ip();
+    }
+
     protected function fetch(): array
     {
         return $this->records[(string)$this->ip()] ?? [];
@@ -98,9 +113,20 @@ class FakeDriver extends AbstractDriver
 
     protected function result(): GeoDataContract
     {
+        $country = $this->dataArray('country');
+
         return GeoData::from([
             'ip' => $this->ip(),
-            'country' => $this->dataArray('country'),
+            'country' => is_array($country)
+                ? [
+                    'name' => $country['names']['en'] ?? null,
+                    'iso_code' => $country['iso_code'] ?? null,
+                    'continent' => [
+                        'name' => $country['continent']['names']['en'] ?? null,
+                        'code' => $country['continent']['code'] ?? null,
+                    ],
+                ]
+                : null,
             'postal_code' => $this->dataString('postal.code'),
             'data' => $this->data(),
         ]);

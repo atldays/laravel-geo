@@ -8,4 +8,9 @@ class DriverException extends GeoException
     {
         return new self(sprintf('The provided IP [%s] is invalid.', $ip));
     }
+
+    public static function missingIp(): self
+    {
+        return new self('The driver IP has not been initialized yet.');
+    }
 }

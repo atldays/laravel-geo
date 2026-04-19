@@ -2,9 +2,9 @@
 
 namespace Atldays\Geo\Contracts;
 
-use Atldays\Geo\Data\{UpdateOptions, UpdateResult};
+use Atldays\Geo\Data\UpdateOptions;
 
 interface GeoDriverUpdatable
 {
-    public function update(UpdateOptions $options): UpdateResult;
+    public function update(UpdateOptions $options): UpdateResultContract;
 }

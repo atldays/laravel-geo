@@ -1,6 +1,6 @@
 <?php
 
-use Atldays\Geo\Drivers\MaxMind;
+use Atldays\Geo\Drivers\IpApi;
 
 return [
     /*
@@ -12,7 +12,7 @@ return [
     | data inside the host Laravel application.
     |
     */
-    'driver' => MaxMind::class,
+    'driver' => IpApi::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -24,6 +24,39 @@ return [
     |
     */
     'fallbacks' => [],
+
+    /*
+    |--------------------------------------------------------------------------
+    | IP-API Configuration
+    |--------------------------------------------------------------------------
+    |
+    | These options define how the package integrates with the free IP-API
+    | HTTP endpoint inside the host Laravel application.
+    |
+    */
+    'ip_api' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Base URL
+        |--------------------------------------------------------------------------
+        |
+        | The free endpoint currently uses plain HTTP. Switch this only if
+        | you are targeting a different compatible endpoint.
+        |
+        */
+        'base_url' => env('GEO_IP_API_BASE_URL', 'http://ip-api.com'),
+
+        /*
+        |--------------------------------------------------------------------------
+        | Timeout
+        |--------------------------------------------------------------------------
+        |
+        | Optional request timeout in seconds for outbound HTTP calls made by
+        | the IP-API driver.
+        |
+        */
+        'timeout' => env('GEO_IP_API_TIMEOUT'),
+    ],
 
     /*
     |--------------------------------------------------------------------------

@@ -45,9 +45,10 @@ class MaxMindDownloadTest extends TestCase
 
             $result = $updater->update(new UpdateOptions);
 
-            $this->assertFalse($result->downloaded);
-            $this->assertSame($databaseFile, $result->databasePath);
-            $this->assertSame($remoteLastModified, $result->remoteLastModified);
+            $this->assertFalse($result->isDownloaded());
+            $this->assertSame($databaseFile, $result->getPath());
+            $this->assertSame($databasePath . '/maxmind-download.json', $result->getMetadataPath());
+            $this->assertFalse($files->exists($result->getMetadataPath()));
             Http::assertSentCount(1);
             Http::assertSent(fn ($request) => $request->method() === 'HEAD');
         } finally {
@@ -77,10 +78,11 @@ class MaxMindDownloadTest extends TestCase
             throw $exception;
         }
 
-        $this->assertTrue($files->exists($result->databasePath));
-        $this->assertSame('mmdb', pathinfo($result->databasePath, PATHINFO_EXTENSION));
-        $this->assertGreaterThan(0, (int)$files->size($result->databasePath));
-        $this->assertTrue($files->exists($result->metadataPath));
-        $this->assertNotNull(json_decode($files->get($result->metadataPath), true));
+        $this->assertTrue($result->isDownloaded());
+        $this->assertTrue($files->exists($result->getPath()));
+        $this->assertSame('mmdb', pathinfo($result->getPath(), PATHINFO_EXTENSION));
+        $this->assertGreaterThan(0, (int)$files->size($result->getPath()));
+        $this->assertTrue($files->exists($result->getMetadataPath()));
+        $this->assertNotNull(json_decode($files->get($result->getMetadataPath()), true));
     }
 }

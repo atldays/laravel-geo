@@ -8,6 +8,8 @@ class DriverUnavailableException extends DriverException
 {
     public static function because(string $driver, string $reason, ?Throwable $previous = null): self
     {
+        $driver = class_basename($driver);
+
         return new self(sprintf(
             'Driver [%s] is unavailable: %s',
             $driver,

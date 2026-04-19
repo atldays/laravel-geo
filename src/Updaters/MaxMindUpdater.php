@@ -2,7 +2,7 @@
 
 namespace Atldays\Geo\Updaters;
 
-use Atldays\Geo\Contracts\GeoDriverUpdatable;
+use Atldays\Geo\Contracts\{GeoDriverUpdatable, UpdateResultContract};
 use Atldays\Geo\Data\{MaxMindConfig, UpdateOptions, UpdateResult};
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use FilesystemIterator;
@@ -26,7 +26,7 @@ class MaxMindUpdater implements GeoDriverUpdatable
     /**
      * @throws ConnectionException|RandomException
      */
-    public function update(UpdateOptions $options): UpdateResult
+    public function update(UpdateOptions $options): UpdateResultContract
     {
         if (!$this->config->accountId || !$this->config->licenseKey) {
             throw DriverUnavailableException::maxMind(
@@ -91,10 +91,8 @@ class MaxMindUpdater implements GeoDriverUpdatable
         if (!$force && $targetPath && !$shouldDownload) {
             return new UpdateResult(
                 downloaded: false,
-                editionId: $editionId,
-                databasePath: $targetPath,
+                path: $targetPath,
                 metadataPath: $this->config->getMetadataPath(),
-                remoteLastModified: $lastModified,
             );
         }
 
@@ -138,10 +136,8 @@ class MaxMindUpdater implements GeoDriverUpdatable
 
             return new UpdateResult(
                 downloaded: true,
-                editionId: $editionId,
-                databasePath: $finalPath,
+                path: $finalPath,
                 metadataPath: $this->config->getMetadataPath(),
-                remoteLastModified: $lastModified,
             );
         } finally {
             $this->files->deleteDirectory($workingDirectory);

@@ -113,7 +113,7 @@ class GeoServiceProvider extends PackageServiceProvider
             $key = ConfigFacade::get('geo.request.fake_ip_key', 'ip');
             $ip = is_string($key) ? $this->input($key) : null;
 
-            if (!ConfigFacade::boolean('app.debug') || !is_string($ip)) {
+            if (!filter_var(ConfigFacade::get('app.debug', false), FILTER_VALIDATE_BOOL) || !is_string($ip)) {
                 return null;
             }
 

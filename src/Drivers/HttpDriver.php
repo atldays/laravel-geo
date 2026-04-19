@@ -44,7 +44,7 @@ abstract class HttpDriver extends AbstractDriver
         }
 
         try {
-            $payload = $response->json(flags: JSON_THROW_ON_ERROR);
+            $payload = json_decode($response->body(), true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
             throw DriverUnavailableException::because(
                 static::class,

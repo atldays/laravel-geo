@@ -1,6 +1,6 @@
 {
     "name": "atldays/laravel-geo",
-    "description": "GeoIP data for Laravel: country, city, continent, coordinates, timezone, and postal code.",
+    "description": "Retrieve visitor location from IP addresses in Laravel using online and local services, including country, city, continent, and coordinates.",
     "keywords": [
         "atldays",
         "laravel",
@@ -17,7 +17,7 @@
         {
             "name": "Anjey Tsibylskij",
             "homepage": "https://github.com/atldays",
-            "role": "Maintainer"
+            "role": "Developer"
         }
     ],
     "support": {

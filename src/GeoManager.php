@@ -51,7 +51,7 @@ class GeoManager
             throw GeoException::unableToResolveCurrentRequest();
         }
 
-        return $this->ip($request->fakeClientIp() ?? $request->realClientIp());
+        return $this->ip($request->fakeIp() ?? $request->realIp());
     }
 
     /**

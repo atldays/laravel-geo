@@ -1,8 +1,29 @@
 {
     "name": "atldays/laravel-geo",
-    "description": "Laravel package for GeoIP integrations backed by MaxMind databases.",
+    "description": "GeoIP data for Laravel: country, city, continent, coordinates, timezone, and postal code.",
+    "keywords": [
+        "atldays",
+        "laravel",
+        "geo",
+        "geoip",
+        "geolocation",
+        "ip-api",
+        "maxmind"
+    ],
     "type": "library",
     "license": "MIT",
+    "homepage": "https://github.com/atldays/laravel-geo",
+    "authors": [
+        {
+            "name": "Anjey Tsibylskij",
+            "homepage": "https://github.com/atldays",
+            "role": "Maintainer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/atldays/laravel-geo/issues",
+        "source": "https://github.com/atldays/laravel-geo"
+    },
     "require": {
         "php": "^8.2",
         "guzzlehttp/guzzle": "^7.9",
@@ -17,8 +38,8 @@
     },
     "require-dev": {
         "laravel/pint": "^1.24",
-        "orchestra/testbench": "^9.0|^10.0|^11.0",
-        "phpunit/phpunit": "^11.5|^12.0|^13.0"
+        "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
+        "phpunit/phpunit": "^10.5|^11.5|^12.0|^13.0"
     },
     "autoload": {
         "psr-4": {
@@ -42,9 +63,13 @@
                 "Atldays\\Geo\\GeoServiceProvider"
             ],
             "aliases": {
-                "Geo": "Atldays\\Geo\\Facades\\Geo"
+                "Geo": "Atldays\\Geo\\Facades\\Geo",
+                "GeoManager": "Atldays\\Geo\\Facades\\GeoManager"
             }
         }
+    },
+    "config": {
+        "sort-packages": true
     },
     "minimum-stability": "stable",
     "prefer-stable": true

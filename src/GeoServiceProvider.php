@@ -10,7 +10,7 @@ use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config as ConfigFacade;
+use Illuminate\Support\Facades\{App, Config as ConfigFacade};
 use Spatie\LaravelPackageTools\{Package, PackageServiceProvider};
 
 class GeoServiceProvider extends PackageServiceProvider
@@ -81,7 +81,12 @@ class GeoServiceProvider extends PackageServiceProvider
 
     protected function registerRequestIpMacros(): void
     {
-        Request::macro('realClientIp', function (): string {
+        Request::macro('geo', function () {
+            /** @var Request $this */
+            return App::make(GeoManager::class)->request($this);
+        });
+
+        Request::macro('realIp', function (): string {
             /** @var Request $this */
             foreach ([
                 'HTTP_CLIENT_IP',
@@ -108,7 +113,7 @@ class GeoServiceProvider extends PackageServiceProvider
             return $this->ip() ?: '0.0.0.0';
         });
 
-        Request::macro('fakeClientIp', function (): ?string {
+        Request::macro('fakeIp', function (): ?string {
             /** @var Request $this */
             $key = ConfigFacade::get('geo.request.fake_ip_key', 'ip');
             $ip = is_string($key) ? $this->input($key) : null;

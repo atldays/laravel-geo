@@ -1,0 +1,76 @@
+{
+    "name": "atldays/laravel-geo",
+    "description": "Retrieve visitor location from IP addresses in Laravel using online and local services, including country, city, continent, and coordinates.",
+    "keywords": [
+        "atldays",
+        "laravel",
+        "geo",
+        "geoip",
+        "geolocation",
+        "ip-api",
+        "maxmind"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/atldays/laravel-geo",
+    "authors": [
+        {
+            "name": "Anjey Tsibylskij",
+            "homepage": "https://github.com/atldays",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/atldays/laravel-geo/issues",
+        "source": "https://github.com/atldays/laravel-geo"
+    },
+    "require": {
+        "php": "^8.2",
+        "guzzlehttp/guzzle": "^7.9",
+        "illuminate/console": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/contracts": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/filesystem": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/http": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+        "maxmind-db/reader": "~1.0",
+        "spatie/laravel-data": "^4.21",
+        "spatie/laravel-package-tools": "^1.93"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.24",
+        "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
+        "phpunit/phpunit": "^10.5|^11.5|^12.0|^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Atldays\\Geo\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit --testsuite Feature",
+        "test:live": "vendor/bin/phpunit --testsuite Live",
+        "format": "vendor/bin/pint",
+        "format:test": "vendor/bin/pint --test"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Atldays\\Geo\\GeoServiceProvider"
+            ],
+            "aliases": {
+                "Geo": "Atldays\\Geo\\Facades\\Geo",
+                "GeoManager": "Atldays\\Geo\\Facades\\GeoManager"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

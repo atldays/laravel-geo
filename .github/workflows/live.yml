@@ -1,0 +1,65 @@
+name: Live
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 0"
+
+jobs:
+  live:
+    name: Live Driver Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Decide whether this scheduled run should execute
+        id: cadence
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          week="$(date -u +%V)"
+
+          if [ $((10#$week % 2)) -eq 0 ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup PHP
+        if: steps.cadence.outputs.run == 'true'
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+
+      - name: Cache Composer dependencies
+        if: steps.cadence.outputs.run == 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache/files
+            ~/.cache/composer/files
+          key: ${{ runner.os }}-php-8.4-live-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-php-8.4-live-
+            ${{ runner.os }}-php-8.4-
+
+      - name: Install dependencies
+        if: steps.cadence.outputs.run == 'true'
+        run: composer update --prefer-dist --no-interaction --with-all-dependencies
+
+      - name: Run live driver tests
+        if: steps.cadence.outputs.run == 'true'
+        env:
+          MAXMIND_ACCOUNT_ID: ${{ secrets.MAXMIND_ACCOUNT_ID }}
+          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
+        run: composer test:live

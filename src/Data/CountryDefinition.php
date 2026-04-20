@@ -90,22 +90,14 @@ class CountryDefinition extends Data implements CountryDefinitionContract
         return $this->officialName;
     }
 
-    public function getNativeName(?string $languageCode = null): ?string
+    public function getNativeName(): ?string
     {
-        if ($languageCode === null) {
-            return $this->nativeName;
-        }
-
-        return $this->lookupArrayValue($this->nativeNames, $languageCode)['common'] ?? null;
+        return $this->nativeName;
     }
 
-    public function getNativeOfficialName(?string $languageCode = null): ?string
+    public function getNativeOfficialName(): ?string
     {
-        if ($languageCode === null) {
-            return $this->nativeOfficialName;
-        }
-
-        return $this->lookupArrayValue($this->nativeNames, $languageCode)['official'] ?? null;
+        return $this->nativeOfficialName;
     }
 
     public function getNativeNames(): ?array
@@ -138,15 +130,6 @@ class CountryDefinition extends Data implements CountryDefinitionContract
         return $this->isoNumeric;
     }
 
-    public function getCurrency(?string $currency = null): ?array
-    {
-        if ($currency === null) {
-            return $this->currencies !== null ? reset($this->currencies) ?: null : null;
-        }
-
-        return $this->lookupArrayValue($this->currencies, $currency);
-    }
-
     public function getCurrencies(): ?array
     {
         return $this->currencies;
@@ -167,13 +150,9 @@ class CountryDefinition extends Data implements CountryDefinitionContract
         return $this->altSpellings;
     }
 
-    public function getLanguage(?string $languageCode = null): ?string
+    public function getLanguage(): ?string
     {
-        if ($languageCode === null) {
-            return $this->language;
-        }
-
-        return $this->lookupScalarValue($this->languages, $languageCode);
+        return $this->language;
     }
 
     public function getLanguages(): ?array
@@ -184,15 +163,6 @@ class CountryDefinition extends Data implements CountryDefinitionContract
     public function getTranslations(): array
     {
         return $this->translations;
-    }
-
-    public function getTranslation(?string $languageCode = null): array
-    {
-        if ($languageCode === null) {
-            return [];
-        }
-
-        return $this->lookupArrayValue($this->translations, $languageCode) ?? [];
     }
 
     public function getGeodata(): ?array
@@ -463,43 +433,5 @@ class CountryDefinition extends Data implements CountryDefinitionContract
     public function getTimezones(): ?array
     {
         return $this->timezones;
-    }
-
-    protected function normalizeLookupKey(string $value): string
-    {
-        return strtolower(trim($value));
-    }
-
-    protected function lookupArrayValue(?array $source, string $key): ?array
-    {
-        $value = $this->lookupValue($source, $key);
-
-        return is_array($value) ? $value : null;
-    }
-
-    protected function lookupScalarValue(?array $source, string $key): ?string
-    {
-        $value = $this->lookupValue($source, $key);
-
-        return is_string($value) ? $value : null;
-    }
-
-    protected function lookupValue(?array $source, string $key): mixed
-    {
-        if ($source === null) {
-            return null;
-        }
-
-        $trimmed = trim($key);
-        $lower = strtolower($trimmed);
-        $upper = strtoupper($trimmed);
-
-        foreach ([$trimmed, $lower, $upper] as $candidate) {
-            if (array_key_exists($candidate, $source)) {
-                return $source[$candidate];
-            }
-        }
-
-        return null;
     }
 }

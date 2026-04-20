@@ -8,9 +8,9 @@ interface CountryDefinitionContract
 
     public function getOfficialName(): ?string;
 
-    public function getNativeName(?string $languageCode = null): ?string;
+    public function getNativeName(): ?string;
 
-    public function getNativeOfficialName(?string $languageCode = null): ?string;
+    public function getNativeOfficialName(): ?string;
 
     public function getNativeNames(): ?array;
 
@@ -24,8 +24,6 @@ interface CountryDefinitionContract
 
     public function getIsoNumeric(): ?string;
 
-    public function getCurrency(?string $currency = null): ?array;
-
     public function getCurrencies(): ?array;
 
     public function getTld(): ?string;
@@ -34,13 +32,11 @@ interface CountryDefinitionContract
 
     public function getAltSpellings(): ?array;
 
-    public function getLanguage(?string $languageCode = null): ?string;
+    public function getLanguage(): ?string;
 
     public function getLanguages(): ?array;
 
     public function getTranslations(): array;
-
-    public function getTranslation(?string $languageCode = null): array;
 
     public function getGeodata(): ?array;
 

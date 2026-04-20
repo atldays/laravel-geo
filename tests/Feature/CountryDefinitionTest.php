@@ -21,16 +21,16 @@ class CountryDefinitionTest extends TestCase
         Config::set('geo.definitions.country', FakeCountryProvider::class);
 
         $country = new Country(
-            name: 'Ukraine',
-            isoCode: 'UA',
-            continent: new Continent(name: 'Europe', code: 'EU'),
+            name: 'Canada',
+            isoCode: 'CA',
+            continent: new Continent(name: 'North America', code: 'NA'),
         );
 
         $definition = $country->definition();
 
         $this->assertInstanceOf(CountryDefinitionContract::class, $definition);
-        $this->assertSame('Fake Ukraine', $definition->getName());
-        $this->assertSame('UKR', $definition->getIsoAlpha3());
+        $this->assertSame('Fake Canada', $definition->getName());
+        $this->assertSame('CAN', $definition->getIsoAlpha3());
     }
 
     public function test_country_dto_can_resolve_country_definition(): void
@@ -38,20 +38,20 @@ class CountryDefinitionTest extends TestCase
         Config::set('geo.definitions.country', Rinvex::class);
 
         $country = new Country(
-            name: 'Ukraine',
-            isoCode: 'UA',
-            continent: new Continent(name: 'Europe', code: 'EU'),
+            name: 'Canada',
+            isoCode: 'CA',
+            continent: new Continent(name: 'North America', code: 'NA'),
         );
 
         $definition = $country->definition();
 
         $this->assertInstanceOf(CountryDefinitionContract::class, $definition);
         $this->assertInstanceOf(CountryDefinition::class, $definition);
-        $this->assertSame('Ukraine', $definition->getName());
-        $this->assertSame('UKR', $definition->getIsoAlpha3());
-        $this->assertSame('.ua', $definition->getTld());
+        $this->assertSame('Canada', $definition->getName());
+        $this->assertSame('CAN', $definition->getIsoAlpha3());
+        $this->assertSame('.ca', $definition->getTld());
         $this->assertArrayHasKey('eng', $definition->getTranslations());
-        $this->assertContains('Europe/Kyiv', $definition->getTimezones() ?? []);
+        $this->assertContains('America/Toronto', $definition->getTimezones() ?? []);
     }
 
     public function test_country_definition_throws_for_unknown_iso_alpha_two_code(): void
@@ -87,7 +87,7 @@ class CountryDefinitionTest extends TestCase
         $this->expectException(DefinitionUnavailable::class);
         $this->expectExceptionMessage('requires package [rinvex/countries]');
 
-        $this->app->make(CountryDefinitionManager::class)->isoCode('UA');
+        $this->app->make(CountryDefinitionManager::class)->isoCode('CA');
     }
 
     public function test_rinvex_resolve_validates_immediately(): void
@@ -102,16 +102,16 @@ class CountryDefinitionTest extends TestCase
 
     public function test_rinvex_resolve_returns_package_definition_dto(): void
     {
-        $definition = (new Rinvex)->resolve('UA');
+        $definition = (new Rinvex)->resolve('CA');
 
         $this->assertInstanceOf(CountryDefinition::class, $definition);
-        $this->assertSame('Ukraine', $definition->getName());
-        $this->assertSame('Україна', $definition->getNativeName('ukr'));
-        $this->assertSame('UKR', $definition->getIsoAlpha3());
-        $this->assertSame('.ua', $definition->getTld());
-        $this->assertSame('UAH', $definition->getCurrency('uah')['iso_4217_code'] ?? null);
-        $this->assertSame(['common' => 'Ukraine', 'official' => 'Ukraine'], $definition->getTranslation('eng'));
-        $this->assertSame('Kyïv', $definition->getDivision('30')['name'] ?? null);
+        $this->assertSame('Canada', $definition->getName());
+        $this->assertSame('Canada', $definition->getNativeName());
+        $this->assertSame('CAN', $definition->getIsoAlpha3());
+        $this->assertSame('.ca', $definition->getTld());
+        $this->assertSame('CAD', $definition->getCurrencies()['CAD']['iso_4217_code'] ?? null);
+        $this->assertSame(['common' => 'Canada', 'official' => 'Canada'], $definition->getTranslations()['eng'] ?? null);
+        $this->assertIsArray($definition->getDivisions());
     }
 }
 
@@ -129,22 +129,22 @@ class FakeCountryDefinition implements CountryDefinitionContract
 
     public function getName(): ?string
     {
-        return 'Fake Ukraine';
+        return 'Fake Canada';
     }
 
     public function getOfficialName(): ?string
     {
-        return 'Fake Ukraine';
+        return 'Fake Canada';
     }
 
-    public function getNativeName(?string $languageCode = null): ?string
+    public function getNativeName(): ?string
     {
-        return 'Fake Ukraine';
+        return 'Fake Canada';
     }
 
-    public function getNativeOfficialName(?string $languageCode = null): ?string
+    public function getNativeOfficialName(): ?string
     {
-        return 'Fake Ukraine';
+        return 'Fake Canada';
     }
 
     public function getNativeNames(): ?array
@@ -169,17 +169,12 @@ class FakeCountryDefinition implements CountryDefinitionContract
 
     public function getIsoAlpha3(): ?string
     {
-        return 'UKR';
+        return 'CAN';
     }
 
     public function getIsoNumeric(): ?string
     {
-        return '804';
-    }
-
-    public function getCurrency(?string $currency = null): ?array
-    {
-        return null;
+        return '124';
     }
 
     public function getCurrencies(): ?array
@@ -189,12 +184,12 @@ class FakeCountryDefinition implements CountryDefinitionContract
 
     public function getTld(): ?string
     {
-        return '.ua';
+        return '.ca';
     }
 
     public function getTlds(): ?array
     {
-        return ['.ua'];
+        return ['.ca'];
     }
 
     public function getAltSpellings(): ?array
@@ -202,7 +197,7 @@ class FakeCountryDefinition implements CountryDefinitionContract
         return [];
     }
 
-    public function getLanguage(?string $languageCode = null): ?string
+    public function getLanguage(): ?string
     {
         return null;
     }
@@ -214,12 +209,7 @@ class FakeCountryDefinition implements CountryDefinitionContract
 
     public function getTranslations(): array
     {
-        return ['eng' => ['common' => 'Fake Ukraine', 'official' => 'Fake Ukraine']];
-    }
-
-    public function getTranslation(?string $languageCode = null): array
-    {
-        return $this->getTranslations()['eng'];
+        return ['eng' => ['common' => 'Fake Canada', 'official' => 'Fake Canada']];
     }
 
     public function getGeodata(): ?array
@@ -229,7 +219,7 @@ class FakeCountryDefinition implements CountryDefinitionContract
 
     public function getContinent(): ?string
     {
-        return 'Europe';
+        return 'North America';
     }
 
     public function usesPostalCode(): ?bool

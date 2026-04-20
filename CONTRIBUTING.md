@@ -16,11 +16,13 @@ This package is especially open to contributions around:
 
 - new geo drivers
 - improvements to existing drivers
+- new country definition providers
+- improvements to existing country definition providers
 - update flows for local database providers
 - normalization of geo data into the shared typed contracts
 - documentation and live coverage for supported providers
 
-The main long-term direction is broader driver support, so contributions in that area are especially welcome.
+The main long-term direction is broader provider support, both for geo drivers and country definition providers, so contributions in those areas are especially welcome.
 
 ## Development Workflow
 
@@ -136,6 +138,14 @@ When a provider can be tested reliably against a real external source, a live te
 
 Contributions affecting drivers are expected to keep both the regular CI workflow and the live workflow green.
 
+If you add or change a country definition provider, please also consider:
+
+- configuration shape under `geo.definitions`
+- normalization into `CountryDefinitionContract`
+- optional dependency behavior, if the provider depends on an external package
+- tests for successful resolution and failure cases
+- README examples and setup notes when public behavior changes
+
 If public behavior changes, examples in `README.md` should stay in sync.
 
 ## Pull Request Notes
@@ -161,6 +171,7 @@ When contributing:
 - prefer backward-compatible improvements when possible
 - update tests when framework-specific behavior changes
 - keep DTO and contract behavior consistent across drivers
+- keep DTO and contract behavior consistent across country definition providers
 
 ## Quality Checklist
 
@@ -171,3 +182,4 @@ Before opening or updating a pull request, make sure:
 - commit messages follow Conventional Commits
 - public API changes are documented
 - driver behavior stays normalized through the shared contracts
+- country definition providers stay normalized through `CountryDefinitionContract`

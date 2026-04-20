@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use Atldays\Geo\Contracts\{CityContract, ContinentContract, CountryContract, GeoDataContract};
+use Atldays\Geo\Contracts\{CityContract, ContinentContract, CountryContract, GeoContract};
 use Atldays\Geo\Drivers\{IpApi, MaxMind};
 use Atldays\Geo\GeoManager;
 use Illuminate\Filesystem\Filesystem;
@@ -19,7 +19,7 @@ class GeoManagerTest extends TestCase
 
         $result = $this->app->make(GeoManager::class)->ip('149.50.244.3');
 
-        $this->assertInstanceOf(GeoDataContract::class, $result);
+        $this->assertInstanceOf(GeoContract::class, $result);
         $this->assertSame(Str::afterLast((string)config('geo.driver'), '\\'), $result->provider());
         $this->assertInstanceOf(ContinentContract::class, $result->continent());
         $this->assertInstanceOf(CountryContract::class, $result->country());

@@ -4,7 +4,7 @@ namespace Atldays\Geo\Contracts;
 
 use Illuminate\Contracts\Support\Arrayable;
 
-interface GeoDataContract extends Arrayable
+interface GeoContract extends Arrayable
 {
     public function ip(): string;
 

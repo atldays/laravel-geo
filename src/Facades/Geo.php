@@ -2,10 +2,12 @@
 
 namespace Atldays\Geo\Facades;
 
-use Atldays\Geo\Contracts\{CityContract, ContinentContract, CountryContract, GeoDataContract};
+use Atldays\Geo\Contracts\{CityContract, ContinentContract, CountryContract, GeoContract};
 use Illuminate\Support\Facades\Facade;
 
 /**
+ * @mixin GeoContract
+ *
  * @method static string ip()
  * @method static string provider()
  * @method static ?ContinentContract continent()
@@ -20,7 +22,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array data()
  * @method static array toArray()
  *
- * @see GeoDataContract
+ * @see GeoContract
  */
 class Geo extends Facade
 {

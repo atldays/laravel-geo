@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use Atldays\Geo\Contracts\GeoDataContract;
+use Atldays\Geo\Contracts\GeoContract;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -40,7 +40,7 @@ class RequestMacrosTest extends TestCase
         $request = Request::create('/?client_ip=149.50.244.3', 'GET');
         $result = $request->geo();
 
-        $this->assertInstanceOf(GeoDataContract::class, $result);
+        $this->assertInstanceOf(GeoContract::class, $result);
         $this->assertSame('149.50.244.3', $result->ip());
         $this->assertSame('TR', $result->country()?->getIsoCode());
     }

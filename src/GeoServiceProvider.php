@@ -3,6 +3,7 @@
 namespace Atldays\Geo;
 
 use Atldays\Geo\Commands\UpdateCommand;
+use Atldays\Geo\Contracts\GeoContract;
 use Atldays\Geo\CountryDefinitions\Rinvex;
 use Atldays\Geo\Data\{IpApiConfig, MaxMindConfig};
 use Atldays\Geo\Drivers\{IpApi, MaxMind};
@@ -43,6 +44,8 @@ class GeoServiceProvider extends PackageServiceProvider
         $this->app->bind('geo', function (Application $app) {
             return $app->make(GeoManager::class)->request();
         });
+
+        $this->app->alias(GeoContract::class, 'geo');
 
         $this->registerMaxMind();
         $this->registerIpApi();

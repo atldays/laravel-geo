@@ -2,13 +2,13 @@
 
 namespace Atldays\Geo\Data;
 
-use Atldays\Geo\Contracts\{CityContract, ContinentContract, CountryContract, GeoDataContract};
+use Atldays\Geo\Contracts\{CityContract, ContinentContract, CountryContract, GeoContract};
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 #[MapInputName(SnakeCaseMapper::class)]
-class GeoData extends Data implements GeoDataContract
+class Geo extends Data implements GeoContract
 {
     public function __construct(
         public readonly string $ip,

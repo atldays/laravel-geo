@@ -3,11 +3,11 @@
 namespace Atldays\Geo\Drivers;
 
 use Atldays\Geo\Concerns\InteractsWithData;
-use Atldays\Geo\Contracts\{GeoDataContract, GeoDriver};
-use Atldays\Geo\Data\GeoData;
+use Atldays\Geo\Contracts\{DriverContract, GeoContract};
+use Atldays\Geo\Data\Geo;
 use Atldays\Geo\Exceptions\DriverException;
 
-abstract class AbstractDriver implements GeoDriver
+abstract class AbstractDriver implements DriverContract
 {
     use InteractsWithData;
 
@@ -22,7 +22,7 @@ abstract class AbstractDriver implements GeoDriver
      * raw source data, cache it on the current driver instance, and then build
      * the final result object from that cached data.
      */
-    final public function resolve(string $ip): GeoDataContract
+    final public function resolve(string $ip): GeoContract
     {
         if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
             throw DriverException::invalidIp($ip);
@@ -34,7 +34,7 @@ abstract class AbstractDriver implements GeoDriver
         $this->data = $this->fetch();
 
         if ($this->data === []) {
-            return GeoData::unresolved($ip, $this->provider());
+            return Geo::unresolved($ip, $this->provider());
         }
 
         return $this->result();
@@ -44,7 +44,7 @@ abstract class AbstractDriver implements GeoDriver
      * Fetch raw data for the current IP from the underlying source.
      *
      * Implementations should only retrieve a source-specific payload and return
-     * it as an array. They should not build the final GeoData DTO here.
+     * it as an array. They should not build the final Geo DTO here.
      */
     abstract protected function fetch(): array;
 
@@ -55,7 +55,7 @@ abstract class AbstractDriver implements GeoDriver
      * on the driver instance and should be accessed through the helper methods
      * exposed by this abstract class.
      */
-    abstract protected function result(): GeoDataContract;
+    abstract protected function result(): GeoContract;
 
     /**
      * Get the IP currently being resolved by the driver.

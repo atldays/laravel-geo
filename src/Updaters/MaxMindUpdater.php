@@ -2,7 +2,7 @@
 
 namespace Atldays\Geo\Updaters;
 
-use Atldays\Geo\Contracts\{GeoDriverUpdatable, UpdateResultContract};
+use Atldays\Geo\Contracts\{UpdatableDriverContract, UpdateResultContract};
 use Atldays\Geo\Data\{MaxMindConfig, UpdateOptions, UpdateResult};
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use FilesystemIterator;
@@ -14,7 +14,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
-class MaxMindUpdater implements GeoDriverUpdatable
+class MaxMindUpdater implements UpdatableDriverContract
 {
     use Concerns\InteractsWithMetadata;
 

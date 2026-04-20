@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use Atldays\Geo\Contracts\GeoDataContract;
-use Atldays\Geo\Data\GeoData;
+use Atldays\Geo\Contracts\GeoContract;
+use Atldays\Geo\Data\Geo;
 use Atldays\Geo\Drivers\AbstractDriver;
 use Atldays\Geo\Exceptions\DriverException;
 use Tests\TestCase;
@@ -112,11 +112,11 @@ class FakeDriver extends AbstractDriver
         return $this->records[(string)$this->ip()] ?? [];
     }
 
-    protected function result(): GeoDataContract
+    protected function result(): GeoContract
     {
         $country = $this->dataArray('country');
 
-        return GeoData::from([
+        return Geo::from([
             'ip' => $this->ip(),
             'provider' => $this->provider(),
             'country' => is_array($country)

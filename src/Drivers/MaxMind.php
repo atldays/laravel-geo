@@ -2,8 +2,8 @@
 
 namespace Atldays\Geo\Drivers;
 
-use Atldays\Geo\Contracts\{GeoDataContract, GeoDriverUpdatable, UpdateResultContract};
-use Atldays\Geo\Data\{GeoData, MaxMindConfig, UpdateOptions};
+use Atldays\Geo\Contracts\{GeoContract, UpdatableDriverContract, UpdateResultContract};
+use Atldays\Geo\Data\{Geo, MaxMindConfig, UpdateOptions};
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use Atldays\Geo\Updaters\MaxMindUpdater;
 use Illuminate\Http\Client\ConnectionException;
@@ -11,7 +11,7 @@ use MaxMind\Db\Reader;
 use Random\RandomException;
 use Throwable;
 
-class MaxMind extends AbstractDriver implements GeoDriverUpdatable
+class MaxMind extends AbstractDriver implements UpdatableDriverContract
 {
     protected ?Reader $reader = null;
 
@@ -50,12 +50,12 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
         return 'MaxMind';
     }
 
-    protected function result(): GeoDataContract
+    protected function result(): GeoContract
     {
         $continent = $this->continent();
         $country = $this->country($continent);
 
-        return GeoData::from([
+        return Geo::from([
             'ip' => $this->ip(),
             'provider' => $this->provider(),
             'continent' => $continent,

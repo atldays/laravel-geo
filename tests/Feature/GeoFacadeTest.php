@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use Atldays\Geo\Contracts\GeoDataContract;
+use Atldays\Geo\Contracts\GeoContract;
 use Atldays\Geo\Facades\Geo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -21,7 +21,7 @@ class GeoFacadeTest extends TestCase
         $request = Request::create('/?client_ip=149.50.244.3', 'GET');
         $this->app->instance('request', $request);
 
-        $this->assertInstanceOf(GeoDataContract::class, Geo::getFacadeRoot());
+        $this->assertInstanceOf(GeoContract::class, Geo::getFacadeRoot());
         $this->assertSame('149.50.244.3', Geo::getFacadeRoot()->ip());
     }
 

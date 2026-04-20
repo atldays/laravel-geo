@@ -2,8 +2,8 @@
 
 namespace Atldays\Geo\Drivers;
 
-use Atldays\Geo\Contracts\GeoDataContract;
-use Atldays\Geo\Data\{GeoData, IpApiConfig};
+use Atldays\Geo\Contracts\GeoContract;
+use Atldays\Geo\Data\{Geo, IpApiConfig};
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use Illuminate\Http\Client\PendingRequest;
 
@@ -66,13 +66,13 @@ class IpApi extends HttpDriver
         return $payload;
     }
 
-    protected function result(): GeoDataContract
+    protected function result(): GeoContract
     {
         $continent = $this->continent();
         $country = $this->country($continent);
         $subdivisions = $this->subdivisions();
 
-        return GeoData::from([
+        return Geo::from([
             'ip' => $this->ip(),
             'provider' => $this->provider(),
             'continent' => $continent,

@@ -2,7 +2,7 @@
 
 namespace Atldays\Geo\Commands;
 
-use Atldays\Geo\Contracts\GeoDriverUpdatable;
+use Atldays\Geo\Contracts\UpdatableDriverContract;
 use Atldays\Geo\Data\UpdateOptions;
 use Atldays\Geo\GeoManager;
 use Illuminate\Console\Command;
@@ -24,7 +24,7 @@ class UpdateCommand extends Command
         $updatableDrivers = 0;
 
         foreach ($manager->drivers() as $driver) {
-            if (!$driver instanceof GeoDriverUpdatable) {
+            if (!$driver instanceof UpdatableDriverContract) {
                 continue;
             }
 

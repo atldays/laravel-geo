@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static string ip()
+ * @method static string provider()
  * @method static ?ContinentContract continent()
  * @method static ?CountryContract country()
  * @method static ?CityContract city()

@@ -8,6 +8,8 @@ interface GeoDataContract extends Arrayable
 {
     public function ip(): string;
 
+    public function provider(): string;
+
     public function continent(): ?ContinentContract;
 
     public function country(): ?CountryContract;

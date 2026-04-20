@@ -88,6 +88,7 @@ class FakeHttpDriver extends HttpDriver
     {
         return new GeoData(
             ip: (string)$this->ip(),
+            provider: 'FakeHttpDriver',
             data: $this->data(),
         );
     }

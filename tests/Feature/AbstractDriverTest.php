@@ -38,6 +38,7 @@ class AbstractDriverTest extends TestCase
         $result = $driver->resolve('127.0.0.1');
 
         $this->assertSame('127.0.0.1', $result->ip());
+        $this->assertSame('FakeDriver', $result->provider());
         $this->assertSame([], $result->data());
         $this->assertNull($result->country());
         $this->assertNull($result->city());
@@ -117,13 +118,16 @@ class FakeDriver extends AbstractDriver
 
         return GeoData::from([
             'ip' => $this->ip(),
+            'provider' => $this->provider(),
             'country' => is_array($country)
                 ? [
                     'name' => $country['names']['en'] ?? null,
                     'iso_code' => $country['iso_code'] ?? null,
+                    'external_id' => $country['geoname_id'] ?? null,
                     'continent' => [
                         'name' => $country['continent']['names']['en'] ?? null,
                         'code' => $country['continent']['code'] ?? null,
+                        'external_id' => $country['continent']['geoname_id'] ?? null,
                     ],
                 ]
                 : null,

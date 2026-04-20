@@ -11,6 +11,11 @@ class IpApi extends HttpDriver
 {
     public function __construct(protected IpApiConfig $config) {}
 
+    protected function provider(): string
+    {
+        return 'IpApi';
+    }
+
     protected function url(): string
     {
         return rtrim($this->config->baseUrl, '/')
@@ -69,6 +74,7 @@ class IpApi extends HttpDriver
 
         return GeoData::from([
             'ip' => $this->ip(),
+            'provider' => $this->provider(),
             'continent' => $continent,
             'country' => $country,
             'city' => $this->city($country, $subdivisions),
@@ -94,6 +100,7 @@ class IpApi extends HttpDriver
         return [
             'name' => $name,
             'code' => $code,
+            'external_id' => null,
         ];
     }
 
@@ -110,6 +117,7 @@ class IpApi extends HttpDriver
             'name' => $name,
             'iso_code' => $isoCode,
             'continent' => $continent,
+            'external_id' => null,
         ];
     }
 
@@ -125,6 +133,7 @@ class IpApi extends HttpDriver
             'name' => $name,
             'country' => $country,
             'subdivisions' => $subdivisions,
+            'external_id' => null,
         ];
     }
 
@@ -140,6 +149,7 @@ class IpApi extends HttpDriver
         return [[
             'iso_code' => $isoCode ?? $name,
             'name' => $name ?? $isoCode,
+            'external_id' => null,
         ]];
     }
 

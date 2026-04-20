@@ -12,6 +12,7 @@ class GeoData extends Data implements GeoDataContract
 {
     public function __construct(
         public readonly string $ip,
+        public readonly string $provider,
         public readonly ?Continent $continent = null,
         public readonly ?Country $country = null,
         public readonly ?City $city = null,
@@ -24,14 +25,19 @@ class GeoData extends Data implements GeoDataContract
         public readonly array $data = [],
     ) {}
 
-    public static function unresolved(string $ip): self
+    public static function unresolved(string $ip, string $provider = 'unresolved'): self
     {
-        return new self(ip: $ip);
+        return new self(ip: $ip, provider: $provider);
     }
 
     public function ip(): string
     {
         return $this->ip;
+    }
+
+    public function provider(): string
+    {
+        return $this->provider;
     }
 
     public function continent(): ?ContinentContract

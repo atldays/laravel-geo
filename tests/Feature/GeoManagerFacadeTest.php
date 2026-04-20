@@ -7,6 +7,7 @@ use Atldays\Geo\Facades\GeoManager as GeoManagerFacade;
 use Atldays\Geo\GeoManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class GeoManagerFacadeTest extends TestCase
@@ -27,6 +28,7 @@ class GeoManagerFacadeTest extends TestCase
 
         $this->assertInstanceOf(GeoDataContract::class, $result);
         $this->assertSame('149.50.244.3', $result->ip());
+        $this->assertSame(Str::afterLast((string)config('geo.driver'), '\\'), $result->provider());
         $this->assertSame('TR', $result->country()?->getIsoCode());
     }
 

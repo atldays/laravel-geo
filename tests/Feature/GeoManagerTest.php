@@ -8,6 +8,7 @@ use Atldays\Geo\GeoManager;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Config, Http};
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class GeoManagerTest extends TestCase
@@ -19,6 +20,7 @@ class GeoManagerTest extends TestCase
         $result = $this->app->make(GeoManager::class)->ip('149.50.244.3');
 
         $this->assertInstanceOf(GeoDataContract::class, $result);
+        $this->assertSame(Str::afterLast((string)config('geo.driver'), '\\'), $result->provider());
         $this->assertInstanceOf(ContinentContract::class, $result->continent());
         $this->assertInstanceOf(CountryContract::class, $result->country());
         $this->assertInstanceOf(CityContract::class, $result->city());
@@ -84,6 +86,7 @@ class GeoManagerTest extends TestCase
         $result = $this->app->make(GeoManager::class)->ip('8.8.8.8');
 
         $this->assertSame('8.8.8.8', $result->ip());
+        $this->assertSame('IpApi', $result->provider());
         $this->assertSame('US', $result->country()?->getIsoCode());
         $this->assertSame('Mountain View', $result->city()?->getName());
     }

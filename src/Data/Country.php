@@ -13,6 +13,8 @@ class Country extends Data implements CountryContract
         #[MapName('iso_code')]
         public readonly string $isoCode,
         public readonly Continent $continent,
+        #[MapName('external_id')]
+        public readonly int|string|null $externalId = null,
     ) {}
 
     public function getContinent(): ContinentContract
@@ -28,5 +30,10 @@ class Country extends Data implements CountryContract
     public function getIsoCode(): string
     {
         return $this->isoCode;
+    }
+
+    public function getExternalId(): int|string|null
+    {
+        return $this->externalId;
     }
 }

@@ -51,6 +51,7 @@ $payload = Geo::data();
 Available facade methods match `GeoDataContract`:
 
 - `Geo::ip()`
+- `Geo::provider()`
 - `Geo::continent()`
 - `Geo::country()`
 - `Geo::city()`
@@ -263,6 +264,7 @@ That means driver-specific payloads are not exposed as arbitrary top-level struc
 
 Depending on the driver and available source data, you may receive:
 
+- provider
 - continent
 - country
 - city
@@ -276,13 +278,17 @@ Depending on the driver and available source data, you may receive:
 Nested geo objects are normalized too:
 
 - `continent()` returns `ContinentContract`
-  It provides a strict name and continent code.
+  It provides a strict name, continent code, and nullable external ID.
 - `country()` and `registeredCountry()` return `CountryContract`
-  They provide a strict name, ISO code, and normalized continent object.
+  They provide a strict name, ISO code, normalized continent object, and nullable external ID.
 - `city()` returns `CityContract`
-  It provides a strict name, normalized country object, and subdivisions collection.
+  It provides a strict name, normalized country object, subdivisions collection, and nullable external ID.
 - city subdivisions implement `SubdivisionContract`
-  They provide a strict name and ISO code.
+  They provide a strict name, ISO code, and nullable external ID.
+
+`provider()` returns the driver name that produced the result, such as `MaxMind` or `IpApi`.
+
+`externalId` is provider-specific metadata. For `MaxMind`, it maps to `geoname_id`. For `IpApi`, it is `null`. It should not be treated as a globally stable cross-provider identifier.
 
 Some drivers may return partial data. A lookup can still be successful even if only part of the geo payload is available.
 

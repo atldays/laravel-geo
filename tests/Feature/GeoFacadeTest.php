@@ -6,6 +6,7 @@ use Atldays\Geo\Contracts\GeoDataContract;
 use Atldays\Geo\Facades\Geo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class GeoFacadeTest extends TestCase
@@ -35,6 +36,7 @@ class GeoFacadeTest extends TestCase
         $this->app->instance('request', $request);
 
         $this->assertSame('149.50.244.3', Geo::ip());
+        $this->assertSame(Str::afterLast((string)config('geo.driver'), '\\'), Geo::provider());
         $this->assertSame('TR', Geo::country()?->getIsoCode());
         $this->assertSame('AS', Geo::continent()?->getCode());
         $this->assertNotNull(Geo::city());

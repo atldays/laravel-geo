@@ -33,7 +33,7 @@ abstract class AbstractDriver implements GeoDriver
         $this->data = $this->fetch();
 
         if ($this->data === []) {
-            return GeoData::unresolved($ip);
+            return GeoData::unresolved($ip, $this->provider());
         }
 
         return $this->result();
@@ -74,5 +74,10 @@ abstract class AbstractDriver implements GeoDriver
     protected function data(): array
     {
         return $this->data;
+    }
+
+    protected function provider(): string
+    {
+        return class_basename(static::class);
     }
 }

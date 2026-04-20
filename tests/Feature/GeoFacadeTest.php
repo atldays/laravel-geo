@@ -25,6 +25,22 @@ class GeoFacadeTest extends TestCase
         $this->assertSame('149.50.244.3', Geo::getFacadeRoot()->ip());
     }
 
+    public function test_geo_contract_can_be_resolved_through_dependency_injection(): void
+    {
+        $this->skipIfDatabaseIsMissing();
+
+        Config::set('app.debug', true);
+        Config::set('geo.request.fake_ip_key', 'client_ip');
+
+        $request = Request::create('/?client_ip=149.50.244.3', 'GET');
+        $this->app->instance('request', $request);
+
+        $geo = $this->app->make(GeoContract::class);
+
+        $this->assertInstanceOf(GeoContract::class, $geo);
+        $this->assertSame('149.50.244.3', $geo->ip());
+    }
+
     public function test_geo_facade_can_resolve_geo_data_from_current_request(): void
     {
         $this->skipIfDatabaseIsMissing();

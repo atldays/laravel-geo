@@ -45,7 +45,7 @@ class GeoServiceProvider extends PackageServiceProvider
             return $app->make(GeoManager::class)->request();
         });
 
-        $this->app->alias(GeoContract::class, 'geo');
+        $this->app->alias('geo', GeoContract::class);
 
         $this->registerMaxMind();
         $this->registerIpApi();

@@ -10,7 +10,7 @@
 
 You can use it directly from the current request, from any `Request` instance, or from an explicit IP address.
 
-All supported drivers are normalized into the same strongly typed `GeoDataContract`, so you work with consistent DTOs instead of provider-specific arrays.
+All supported drivers are normalized into the same strongly typed `GeoContract`, so you work with consistent DTOs instead of provider-specific arrays.
 
 ## Drivers
 
@@ -48,7 +48,7 @@ $latitude = Geo::latitude();
 $payload = Geo::data();
 ```
 
-Available facade methods match `GeoDataContract`:
+Available facade methods match `GeoContract`:
 
 - `Geo::ip()`
 - `Geo::provider()`
@@ -83,11 +83,31 @@ $city = $geo->city();
 $payload = $geo->data();
 ```
 
-`GeoManager::ip()` and `GeoManager::request()` return `Atldays\Geo\Contracts\GeoDataContract`.
+`GeoManager::ip()` and `GeoManager::request()` return `Atldays\Geo\Contracts\GeoContract`.
+
+### Dependency Injection
+
+You can also resolve the current geo result through dependency injection using `GeoContract`.
+
+```php
+use Atldays\Geo\Contracts\GeoContract;
+
+class ShowGeoController
+{
+    public function __invoke(GeoContract $geo)
+    {
+        return [
+            'ip' => $geo->ip(),
+            'country' => $geo->country()?->getIsoCode(),
+            'city' => $geo->city()?->getName(),
+        ];
+    }
+}
+```
 
 ## Configuration
 
-The main config file is [config/geo.php](/Users/anjeytsibylskij/Documents/Github/atldays/laravel-geo/config/geo.php).
+The main config file is [config/geo.php](config/geo.php).
 
 ### Default driver and fallbacks
 
@@ -123,7 +143,7 @@ If a driver throws `DriverUnavailableException`, the manager moves to the next c
 
 ## Request Macros
 
-The package registers two request macros:
+The package registers three request macros:
 
 - `request()->geo()`
 - `request()->realIp()`
@@ -258,7 +278,7 @@ Source-specific details such as `edition_id`, `download_url`, or `remote_last_mo
 
 ## Geo Data
 
-Resolved geo data is normalized into `GeoDataContract`.
+Resolved geo data is normalized into `GeoContract`.
 
 That means driver-specific payloads are not exposed as arbitrary top-level structures. Every supported driver is mapped into the same typed result shape.
 
@@ -281,6 +301,7 @@ Nested geo objects are normalized too:
   It provides a strict name, continent code, and nullable external ID.
 - `country()` and `registeredCountry()` return `CountryContract`
   They provide a strict name, ISO code, normalized continent object, and nullable external ID.
+  They also expose `definition()` for resolving rich country metadata through `CountryDefinitionContract`.
 - `city()` returns `CityContract`
   It provides a strict name, normalized country object, subdivisions collection, and nullable external ID.
 - city subdivisions implement `SubdivisionContract`
@@ -290,6 +311,38 @@ Nested geo objects are normalized too:
 
 `externalId` is provider-specific metadata. For `MaxMind`, it maps to `geoname_id`. For `IpApi`, it is `null`. It should not be treated as a globally stable cross-provider identifier.
 
+`country()->definition()` resolves rich country metadata through the configured country definition provider.
+
+By default the package points to `Atldays\Geo\CountryDefinitions\Rinvex`, which requires the optional [rinvex/countries](https://packagist.org/packages/rinvex/countries) package to be installed.
+
+Install it when you want to use country definitions:
+
+```bash
+composer require rinvex/countries
+```
+
+Config:
+
+```php
+'definitions' => [
+    'country' => \Atldays\Geo\CountryDefinitions\Rinvex::class,
+],
+```
+
+The configured provider is resolved through `CountryDefinitionManager`, so additional providers can be added later without changing the `CountryContract` API.
+
+Example:
+
+```php
+$definition = Geo::country()?->definition();
+
+$officialName = $definition?->getOfficialName();
+$currencies = $definition?->getCurrencies();
+$translations = $definition?->getTranslations();
+```
+
+If the configured provider depends on an optional package that is not installed, the package throws `DefinitionUnavailable`.
+
 Some drivers may return partial data. A lookup can still be successful even if only part of the geo payload is available.
 
 ## Public API
@@ -298,9 +351,9 @@ Main public package entry points:
 
 - `Atldays\Geo\Facades\Geo`
 - `Atldays\Geo\Facades\GeoManager`
-- `Atldays\Geo\Contracts\GeoDataContract`
-- `Atldays\Geo\Contracts\GeoDriver`
-- `Atldays\Geo\Contracts\GeoDriverUpdatable`
+- `Atldays\Geo\Contracts\GeoContract`
+- `Atldays\Geo\Contracts\DriverContract`
+- `Atldays\Geo\Contracts\UpdatableDriverContract`
 - `Atldays\Geo\Contracts\UpdateResultContract`
 
 ## Testing
@@ -327,4 +380,4 @@ Live tests cover real providers and may require external credentials, especially
 
 ## License
 
-The MIT License (MIT). Please see [LICENSE.md](/Users/anjeytsibylskij/Documents/Github/atldays/laravel-geo/LICENSE.md) for more information.
+The MIT License (MIT). Please see [LICENSE.md](LICENSE.md) for more information.

@@ -2,8 +2,8 @@
 
 namespace Atldays\Geo\Drivers;
 
-use Atldays\Geo\Contracts\{GeoDataContract, GeoDriverUpdatable, UpdateResultContract};
-use Atldays\Geo\Data\{GeoData, MaxMindConfig, UpdateOptions};
+use Atldays\Geo\Contracts\{GeoContract, UpdatableDriverContract, UpdateResultContract};
+use Atldays\Geo\Data\{Geo, MaxMindConfig, UpdateOptions};
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use Atldays\Geo\Updaters\MaxMindUpdater;
 use Illuminate\Http\Client\ConnectionException;
@@ -11,7 +11,7 @@ use MaxMind\Db\Reader;
 use Random\RandomException;
 use Throwable;
 
-class MaxMind extends AbstractDriver implements GeoDriverUpdatable
+class MaxMind extends AbstractDriver implements UpdatableDriverContract
 {
     protected ?Reader $reader = null;
 
@@ -45,13 +45,19 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
         return is_array($record) ? $record : [];
     }
 
-    protected function result(): GeoDataContract
+    protected function provider(): string
+    {
+        return 'MaxMind';
+    }
+
+    protected function result(): GeoContract
     {
         $continent = $this->continent();
         $country = $this->country($continent);
 
-        return GeoData::from([
+        return Geo::from([
             'ip' => $this->ip(),
+            'provider' => $this->provider(),
             'continent' => $continent,
             'country' => $country,
             'city' => $this->city($country),
@@ -90,6 +96,7 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
             ? [
                 'name' => $this->localizedName($continent['names'] ?? null),
                 'code' => $continent['code'] ?? null,
+                'external_id' => $continent['geoname_id'] ?? null,
             ]
             : null;
     }
@@ -103,6 +110,7 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
                 'name' => $this->localizedName($country['names'] ?? null),
                 'iso_code' => $country['iso_code'] ?? null,
                 'continent' => $continent,
+                'external_id' => $country['geoname_id'] ?? null,
             ]
             : null;
     }
@@ -117,6 +125,7 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
                 'name' => $this->localizedName($city['names'] ?? null),
                 'country' => $country,
                 'subdivisions' => $this->normalizeSubdivisions($subdivisions),
+                'external_id' => $city['geoname_id'] ?? null,
             ]
             : null;
     }
@@ -130,6 +139,7 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
                 'name' => $this->localizedName($registeredCountry['names'] ?? null),
                 'iso_code' => $registeredCountry['iso_code'] ?? null,
                 'continent' => $continent,
+                'external_id' => $registeredCountry['geoname_id'] ?? null,
             ]
             : null;
     }
@@ -173,6 +183,7 @@ class MaxMind extends AbstractDriver implements GeoDriverUpdatable
             return [
                 'name' => $this->localizedName($subdivision['names'] ?? null),
                 'iso_code' => $subdivision['iso_code'] ?? null,
+                'external_id' => $subdivision['geoname_id'] ?? null,
             ];
         }, $subdivisions)));
 

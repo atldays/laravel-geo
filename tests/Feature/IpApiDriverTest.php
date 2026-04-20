@@ -73,11 +73,19 @@ class IpApiDriverTest extends TestCase
         $result = $this->makeDriver()->resolve('8.8.8.8');
 
         $this->assertSame('8.8.8.8', $result->ip());
+        $this->assertSame('IpApi', $result->provider());
         $this->assertSame('NA', $result->continent()?->getCode());
+        $this->assertNull($result->continent()?->getExternalId());
         $this->assertSame('US', $result->country()?->getIsoCode());
+        $this->assertSame('United States', $result->country()?->definition()->getName());
+        $this->assertSame('USA', $result->country()?->definition()->getIsoAlpha3());
+        $this->assertSame('.us', $result->country()?->definition()->getTld());
+        $this->assertNull($result->country()?->getExternalId());
         $this->assertSame('Mountain View', $result->city()?->getName());
+        $this->assertNull($result->city()?->getExternalId());
         $this->assertCount(1, $result->city()?->getSubdivisions() ?? []);
         $this->assertSame('CA', $result->city()?->getSubdivisions()->first()?->getIsoCode());
+        $this->assertNull($result->city()?->getSubdivisions()->first()?->getExternalId());
         $this->assertNull($result->registeredCountry());
         $this->assertNull($result->accuracyRadius());
         $this->assertSame(37.422, $result->latitude());
@@ -103,6 +111,7 @@ class IpApiDriverTest extends TestCase
         $result = $this->makeDriver()->resolve('1.1.1.1');
 
         $this->assertSame('1.1.1.1', $result->ip());
+        $this->assertSame('IpApi', $result->provider());
         $this->assertNull($result->continent());
         $this->assertNull($result->country());
         $this->assertNull($result->city());

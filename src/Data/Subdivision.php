@@ -12,6 +12,8 @@ class Subdivision extends Data implements SubdivisionContract
         public readonly string $name,
         #[MapName('iso_code')]
         public readonly string $isoCode,
+        #[MapName('external_id')]
+        public readonly int|string|null $externalId = null,
     ) {}
 
     public function getName(): string
@@ -22,5 +24,10 @@ class Subdivision extends Data implements SubdivisionContract
     public function getIsoCode(): string
     {
         return $this->isoCode;
+    }
+
+    public function getExternalId(): int|string|null
+    {
+        return $this->externalId;
     }
 }

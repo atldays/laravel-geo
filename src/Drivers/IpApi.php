@@ -2,14 +2,19 @@
 
 namespace Atldays\Geo\Drivers;
 
-use Atldays\Geo\Contracts\GeoDataContract;
-use Atldays\Geo\Data\{GeoData, IpApiConfig};
+use Atldays\Geo\Contracts\GeoContract;
+use Atldays\Geo\Data\{Geo, IpApiConfig};
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use Illuminate\Http\Client\PendingRequest;
 
 class IpApi extends HttpDriver
 {
     public function __construct(protected IpApiConfig $config) {}
+
+    protected function provider(): string
+    {
+        return 'IpApi';
+    }
 
     protected function url(): string
     {
@@ -61,14 +66,15 @@ class IpApi extends HttpDriver
         return $payload;
     }
 
-    protected function result(): GeoDataContract
+    protected function result(): GeoContract
     {
         $continent = $this->continent();
         $country = $this->country($continent);
         $subdivisions = $this->subdivisions();
 
-        return GeoData::from([
+        return Geo::from([
             'ip' => $this->ip(),
+            'provider' => $this->provider(),
             'continent' => $continent,
             'country' => $country,
             'city' => $this->city($country, $subdivisions),
@@ -94,6 +100,7 @@ class IpApi extends HttpDriver
         return [
             'name' => $name,
             'code' => $code,
+            'external_id' => null,
         ];
     }
 
@@ -110,6 +117,7 @@ class IpApi extends HttpDriver
             'name' => $name,
             'iso_code' => $isoCode,
             'continent' => $continent,
+            'external_id' => null,
         ];
     }
 
@@ -125,6 +133,7 @@ class IpApi extends HttpDriver
             'name' => $name,
             'country' => $country,
             'subdivisions' => $subdivisions,
+            'external_id' => null,
         ];
     }
 
@@ -140,6 +149,7 @@ class IpApi extends HttpDriver
         return [[
             'iso_code' => $isoCode ?? $name,
             'name' => $name ?? $isoCode,
+            'external_id' => null,
         ]];
     }
 

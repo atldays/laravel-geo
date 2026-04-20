@@ -4,5 +4,5 @@ namespace Atldays\Geo\Contracts;
 
 interface GeoMatcher
 {
-    public function matchGeo(GeoDataContract $geo): bool;
+    public function matchGeo(GeoContract $geo): bool;
 }

@@ -2,8 +2,8 @@
 
 namespace Atldays\Geo;
 
-use Atldays\Geo\Contracts\{GeoDataContract, GeoDriver};
-use Atldays\Geo\Data\GeoData;
+use Atldays\Geo\Contracts\{DriverContract, GeoContract};
+use Atldays\Geo\Data\Geo;
 use Atldays\Geo\Exceptions\{DriverUnavailableException, GeoException};
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Container\{BindingResolutionException, Container};
@@ -21,7 +21,7 @@ class GeoManager
     /**
      * @throws BindingResolutionException
      */
-    public function ip(string $ip): GeoDataContract
+    public function ip(string $ip): GeoContract
     {
         $exception = null;
 
@@ -37,13 +37,13 @@ class GeoManager
             throw DriverUnavailableException::allDriversFailed($exception);
         }
 
-        return GeoData::unresolved($ip);
+        return Geo::unresolved($ip);
     }
 
     /**
      * @throws BindingResolutionException
      */
-    public function request(?Request $request = null): GeoDataContract
+    public function request(?Request $request = null): GeoContract
     {
         $request ??= $this->container->make('request');
 
@@ -55,7 +55,7 @@ class GeoManager
     }
 
     /**
-     * @return GeoDriver[]
+     * @return DriverContract[]
      *
      * @throws BindingResolutionException
      */
@@ -71,10 +71,10 @@ class GeoManager
         ]));
 
         foreach ($drivers as $driverClass) {
-            if (!is_string($driverClass) || !is_a($driverClass, GeoDriver::class, true)) {
+            if (!is_string($driverClass) || !is_a($driverClass, DriverContract::class, true)) {
                 throw GeoException::invalidConfiguredDriver(
                     is_string($driverClass) ? $driverClass : get_debug_type($driverClass),
-                    GeoDriver::class,
+                    DriverContract::class,
                 );
             }
 

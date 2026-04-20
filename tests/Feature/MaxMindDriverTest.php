@@ -55,20 +55,30 @@ class MaxMindDriverTest extends TestCase
         $result = $driver->resolve('149.50.244.3');
 
         $this->assertSame('149.50.244.3', $result->ip());
+        $this->assertSame('MaxMind', $result->provider());
         $this->assertSame('AS', $result->continent()?->getCode());
+        $this->assertSame(6255147, $result->continent()?->getExternalId());
         $this->assertSame('Turkey', $result->country()?->getName());
         $this->assertSame('TR', $result->country()?->getIsoCode());
+        $this->assertSame('TUR', $result->country()?->definition()->getIsoAlpha3());
+        $this->assertSame('Turkey', $result->country()?->definition()->getName());
+        $this->assertContains('.tr', $result->country()?->definition()->getTlds() ?? []);
+        $this->assertSame(298795, $result->country()?->getExternalId());
         $this->assertSame('Istanbul', $result->city()?->getName());
+        $this->assertSame(745044, $result->city()?->getExternalId());
         $this->assertInstanceOf(Collection::class, $result->city()?->getSubdivisions());
         $this->assertCount(1, $result->city()?->getSubdivisions() ?? []);
         $this->assertSame('34', $result->city()?->getSubdivisions()->first()?->getIsoCode());
+        $this->assertSame(745042, $result->city()?->getSubdivisions()->first()?->getExternalId());
         $this->assertSame('TR', $result->registeredCountry()?->getIsoCode());
+        $this->assertSame(298795, $result->registeredCountry()?->getExternalId());
         $this->assertSame(20, $result->accuracyRadius());
         $this->assertSame(41.0138, $result->latitude());
         $this->assertSame(28.9497, $result->longitude());
         $this->assertSame('Europe/Istanbul', $result->timeZone());
         $this->assertSame('34000', $result->postalCode());
         $this->assertNotEmpty($result->data());
+        $this->assertSame(6255147, $result->toArray()['continent']['external_id']);
     }
 
     public function test_maxmind_driver_can_resolve_country_only_record(): void
@@ -96,6 +106,7 @@ class MaxMindDriverTest extends TestCase
         $result = $driver->resolve('8.8.8.8');
 
         $this->assertSame('8.8.8.8', $result->ip());
+        $this->assertSame('MaxMind', $result->provider());
         $this->assertSame('NA', $result->continent()?->getCode());
         $this->assertSame('US', $result->country()?->getIsoCode());
         $this->assertNull($result->city());
@@ -135,8 +146,10 @@ class MaxMindDriverTest extends TestCase
 
         $result = $driver->resolve('203.0.113.10');
 
+        $this->assertSame('MaxMind', $result->provider());
         $this->assertSame('AU', $result->country()?->getIsoCode());
         $this->assertSame('Sydney', $result->city()?->getName());
+        $this->assertSame(2147714, $result->city()?->getExternalId());
         $this->assertCount(0, $result->city()?->getSubdivisions() ?? []);
         $this->assertNull($result->registeredCountry());
         $this->assertNull($result->accuracyRadius());
@@ -153,6 +166,7 @@ class MaxMindDriverTest extends TestCase
         $result = $driver->resolve('192.0.2.10');
 
         $this->assertSame('192.0.2.10', $result->ip());
+        $this->assertSame('MaxMind', $result->provider());
         $this->assertNull($result->continent());
         $this->assertNull($result->country());
         $this->assertNull($result->city());

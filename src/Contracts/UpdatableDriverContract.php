@@ -4,7 +4,7 @@ namespace Atldays\Geo\Contracts;
 
 use Atldays\Geo\Data\UpdateOptions;
 
-interface GeoDriverUpdatable
+interface UpdatableDriverContract
 {
     public function update(UpdateOptions $options): UpdateResultContract;
 }

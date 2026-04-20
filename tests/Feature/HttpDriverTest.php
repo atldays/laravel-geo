@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use Atldays\Geo\Contracts\GeoDataContract;
-use Atldays\Geo\Data\GeoData;
+use Atldays\Geo\Contracts\GeoContract;
+use Atldays\Geo\Data\Geo;
 use Atldays\Geo\Drivers\HttpDriver;
 use Atldays\Geo\Exceptions\DriverUnavailableException;
 use Illuminate\Http\Client\ConnectionException;
@@ -84,10 +84,11 @@ class FakeHttpDriver extends HttpDriver
         return $this->baseUrl . '/' . $this->ip();
     }
 
-    protected function result(): GeoDataContract
+    protected function result(): GeoContract
     {
-        return new GeoData(
+        return new Geo(
             ip: (string)$this->ip(),
+            provider: 'FakeHttpDriver',
             data: $this->data(),
         );
     }

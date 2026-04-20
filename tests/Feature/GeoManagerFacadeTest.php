@@ -2,11 +2,12 @@
 
 namespace Tests\Feature;
 
-use Atldays\Geo\Contracts\GeoDataContract;
+use Atldays\Geo\Contracts\GeoContract;
 use Atldays\Geo\Facades\GeoManager as GeoManagerFacade;
 use Atldays\Geo\GeoManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class GeoManagerFacadeTest extends TestCase
@@ -25,8 +26,9 @@ class GeoManagerFacadeTest extends TestCase
 
         $result = GeoManagerFacade::ip('149.50.244.3');
 
-        $this->assertInstanceOf(GeoDataContract::class, $result);
+        $this->assertInstanceOf(GeoContract::class, $result);
         $this->assertSame('149.50.244.3', $result->ip());
+        $this->assertSame(Str::afterLast((string)config('geo.driver'), '\\'), $result->provider());
         $this->assertSame('TR', $result->country()?->getIsoCode());
     }
 

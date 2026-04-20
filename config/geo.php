@@ -1,5 +1,6 @@
 <?php
 
+use Atldays\Geo\CountryDefinitions\Rinvex;
 use Atldays\Geo\Drivers\IpApi;
 
 return [
@@ -24,6 +25,19 @@ return [
     |
     */
     'fallbacks' => [],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Definitions
+    |--------------------------------------------------------------------------
+    |
+    | These providers resolve optional reference data that sits on top of the
+    | normalized geo DTOs, such as rich country metadata lookups by ISO code.
+    |
+    */
+    'definitions' => [
+        'country' => Rinvex::class,
+    ],
 
     /*
     |--------------------------------------------------------------------------

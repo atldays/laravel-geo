@@ -1,32 +1,25 @@
 <?php
 
-namespace Atldays\Geo\Drivers\Concerns;
+namespace Atldays\Geo\Concerns;
 
 use Illuminate\Support\Arr;
 
 trait InteractsWithData
 {
-    /**
-     * Read a raw value from the cached driver payload using dot notation.
-     */
+    abstract protected function data(): array;
+
     protected function dataValue(string $key, mixed $default = null): mixed
     {
         return Arr::get($this->data(), $key, $default);
     }
 
-    /**
-     * Read an array value from the cached driver payload.
-     */
     protected function dataArray(string $key): ?array
     {
         $value = $this->dataValue($key);
 
-        return is_array($value) && $value !== [] ? $value : null;
+        return $this->valueArray($value);
     }
 
-    /**
-     * Read an integer value from the cached driver payload.
-     */
     protected function dataInt(string $key): ?int
     {
         $value = $this->dataValue($key);
@@ -34,9 +27,6 @@ trait InteractsWithData
         return is_numeric($value) ? (int)$value : null;
     }
 
-    /**
-     * Read a float value from the cached driver payload.
-     */
     protected function dataFloat(string $key): ?float
     {
         $value = $this->dataValue($key);
@@ -44,9 +34,6 @@ trait InteractsWithData
         return is_numeric($value) ? (float)$value : null;
     }
 
-    /**
-     * Read a non-empty string value from the cached driver payload.
-     */
     protected function dataString(string $key): ?string
     {
         $value = $this->dataValue($key);
@@ -58,5 +45,17 @@ trait InteractsWithData
         $value = trim($value);
 
         return $value === '' ? null : $value;
+    }
+
+    protected function dataBool(string $key): ?bool
+    {
+        $value = $this->dataValue($key);
+
+        return is_bool($value) ? $value : null;
+    }
+
+    protected function valueArray(mixed $value): ?array
+    {
+        return is_array($value) && $value !== [] ? $value : null;
     }
 }

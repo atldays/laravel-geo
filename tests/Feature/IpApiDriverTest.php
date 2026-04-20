@@ -77,6 +77,9 @@ class IpApiDriverTest extends TestCase
         $this->assertSame('NA', $result->continent()?->getCode());
         $this->assertNull($result->continent()?->getExternalId());
         $this->assertSame('US', $result->country()?->getIsoCode());
+        $this->assertSame('United States', $result->country()?->definition()->getName());
+        $this->assertSame('USA', $result->country()?->definition()->getIsoAlpha3());
+        $this->assertSame('.us', $result->country()?->definition()->getTld());
         $this->assertNull($result->country()?->getExternalId());
         $this->assertSame('Mountain View', $result->city()?->getName());
         $this->assertNull($result->city()?->getExternalId());

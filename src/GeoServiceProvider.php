@@ -3,6 +3,7 @@
 namespace Atldays\Geo;
 
 use Atldays\Geo\Commands\UpdateCommand;
+use Atldays\Geo\CountryDefinitions\Rinvex;
 use Atldays\Geo\Data\{IpApiConfig, MaxMindConfig};
 use Atldays\Geo\Drivers\{IpApi, MaxMind};
 use Atldays\Geo\Updaters\MaxMindUpdater;
@@ -32,12 +33,20 @@ class GeoServiceProvider extends PackageServiceProvider
             );
         });
 
+        $this->app->singleton(CountryDefinitionManager::class, function (Application $app): CountryDefinitionManager {
+            return new CountryDefinitionManager(
+                config: $app->make(Config::class),
+                container: $app,
+            );
+        });
+
         $this->app->bind('geo', function (Application $app) {
             return $app->make(GeoManager::class)->request();
         });
 
         $this->registerMaxMind();
         $this->registerIpApi();
+        $this->registerCountryDefinitions();
     }
 
     protected function registerMaxMind(): void
@@ -72,6 +81,11 @@ class GeoServiceProvider extends PackageServiceProvider
                 config: $app->make(IpApiConfig::class),
             );
         });
+    }
+
+    protected function registerCountryDefinitions(): void
+    {
+        $this->app->bind(Rinvex::class, fn () => new Rinvex);
     }
 
     public function packageBooted(): void

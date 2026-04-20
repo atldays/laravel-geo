@@ -60,6 +60,9 @@ class MaxMindDriverTest extends TestCase
         $this->assertSame(6255147, $result->continent()?->getExternalId());
         $this->assertSame('Turkey', $result->country()?->getName());
         $this->assertSame('TR', $result->country()?->getIsoCode());
+        $this->assertSame('TUR', $result->country()?->definition()->getIsoAlpha3());
+        $this->assertSame('Turkey', $result->country()?->definition()->getName());
+        $this->assertContains('.tr', $result->country()?->definition()->getTlds() ?? []);
         $this->assertSame(298795, $result->country()?->getExternalId());
         $this->assertSame('Istanbul', $result->city()?->getName());
         $this->assertSame(745044, $result->city()?->getExternalId());

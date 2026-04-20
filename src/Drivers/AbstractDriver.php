@@ -2,13 +2,14 @@
 
 namespace Atldays\Geo\Drivers;
 
+use Atldays\Geo\Concerns\InteractsWithData;
 use Atldays\Geo\Contracts\{GeoDataContract, GeoDriver};
 use Atldays\Geo\Data\GeoData;
 use Atldays\Geo\Exceptions\DriverException;
 
 abstract class AbstractDriver implements GeoDriver
 {
-    use Concerns\InteractsWithData;
+    use InteractsWithData;
 
     private ?string $ip = null;
 
